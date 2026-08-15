@@ -14,5 +14,5 @@ export function colorForIndex(i: number) {
 
 // The four answer-option colors shown on both host and team screens.
 // Kept fixed per position (A/B/C/D) so the game is easy to follow at a glance.
-export const OPTION_COLORS = ["#3B5CFF", "#FF3EA5", "#FFC93C", "#22D67E"];
+export const OPTION_COLORS = ["#bbc6ff", "#bbc6ff", "#bbc6ff", "#bbc6ff"] as const;
 export const OPTION_LETTERS = ["A", "B", "C", "D"];
