@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { TEAM_COLORS } from "@/lib/colors";
 
-const MAX_TEAMS = 7;
+const MAX_TEAMS = 8;
 
 export async function POST(
   req: Request,
@@ -58,7 +58,7 @@ export async function POST(
 
   if ((existingTeams?.length ?? 0) >= MAX_TEAMS) {
     return NextResponse.json(
-      { error: "This game already has the maximum of 7 teams." },
+      { error: "This game already has the maximum of 8 teams." },
       { status: 409 }
     );
   }
