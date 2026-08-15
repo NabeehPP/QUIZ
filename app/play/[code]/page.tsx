@@ -375,34 +375,70 @@ export default function TeamPlayPage() {
               key="results"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-center w-full max-w-sm"
+              className="text-center w-full max-w-2xl"
             >
-              <h2 className="text-shimmer animate-shimmer font-display font-black text-3xl mb-2 bg-clip-text text-transparent">
-                🏆 Game Over!
+              <h2 className="text-shimmer animate-shimmer font-display font-black text-3xl md:text-4xl mb-2 bg-clip-text text-transparent">
+                🏆 FINAL RESULTS 🏆
               </h2>
-              {myRank ? (
+
+              {leaderboard ? (
                 <>
-                  <p className="text-white/70 mb-6">Here's how {team.name} did:</p>
-                  <div className="glass rounded-3xl p-6 mb-6 relative">
-                    {myRank.place <= 3 && (
-                      <span className="absolute inset-0 rounded-3xl bg-gameyellow/20 animate-glowPulse pointer-events-none" />
-                    )}
-                    <p className="text-5xl mb-2 relative">
-                      {myRank.place === 1
-                        ? "🥇"
-                        : myRank.place === 2
-                        ? "🥈"
-                        : myRank.place === 3
-                        ? "🥉"
-                        : "🎖️"}
-                    </p>
-                    <p className="font-display font-black text-2xl relative">
-                      Place #{myRank.place}
-                    </p>
-                    <p className="text-white/70 mt-2 relative">
-                      {myRank.entry.score} points • {myRank.entry.correct}/
-                      {game.total_questions} correct
-                    </p>
+                  <p className="text-white/70 mb-5">Complete leaderboard</p>
+
+                  {myRank && (
+                    <div className="glass rounded-2xl px-4 py-3 mb-5 border-2 border-gameyellow/50">
+                      <span className="font-display font-black text-gameyellow">
+                        {team.name}
+                      </span>
+                      <span className="text-white/60"> • </span>
+                      <span className="font-display font-extrabold">
+                        Your position: #{myRank.place}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="w-full max-h-[55vh] overflow-y-auto pr-1 space-y-2">
+                    {leaderboard.map((entry, i) => {
+                      const isMe = entry.teamId === team.teamId;
+
+                      return (
+                        <motion.div
+                          key={entry.teamId}
+                          initial={{ opacity: 0, x: -15 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.07 }}
+                          className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left ${
+                            isMe
+                              ? "bg-gameyellow/20 border-2 border-gameyellow"
+                              : "glass border-2 border-transparent"
+                          }`}
+                        >
+                          <span className="font-display font-black w-8 text-center text-lg">
+                            {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
+                          </span>
+
+                          <span
+                            className="w-3 h-3 rounded-full shrink-0"
+                            style={{ backgroundColor: entry.color }}
+                          />
+
+                          <span className="font-display font-bold flex-1 truncate">
+                            {entry.name}
+                            {isMe && (
+                              <span className="ml-2 text-gameyellow text-xs">YOU</span>
+                            )}
+                          </span>
+
+                          <span className="text-white/60 text-xs sm:text-sm shrink-0">
+                            {entry.correct}/{game.total_questions}
+                          </span>
+
+                          <span className="font-display font-extrabold text-gameyellow min-w-[52px] text-right">
+                            {entry.score}
+                          </span>
+                        </motion.div>
+                      );
+                    })}
                   </div>
                 </>
               ) : (
@@ -410,11 +446,9 @@ export default function TeamPlayPage() {
                   Tallying scores…
                 </p>
               )}
-              <p className="font-display font-bold text-gameyellow">
+
+              <p className="font-display font-bold text-gameyellow mt-6">
                 Know the signs. Speak up. Stand together.
-              </p>
-              <p className="text-white/50 text-xs mt-6">
-                Look up at the big screen for the full leaderboard!
               </p>
             </motion.div>
           )}
