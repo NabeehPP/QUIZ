@@ -279,7 +279,7 @@ class SoundEngine {
       this.musicAudio = new Audio("/audio/quiz-master.mp3");
       this.musicAudio.loop = true;
       this.musicAudio.preload = "auto";
-      this.musicAudio.volume = 0.07;
+      this.musicAudio.volume = 0.02;
     }
 
     this.musicPlaying = true;
@@ -321,7 +321,7 @@ class SoundEngine {
 
     this.musicResumeTimer = window.setTimeout(() => {
       if (this.musicAudio && this.musicPlaying) {
-        this.musicAudio.volume = 0.07;
+        this.musicAudio.volume = 0.02;
       }
 
       this.musicResumeTimer = null;
