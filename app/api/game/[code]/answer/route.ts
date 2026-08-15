@@ -55,18 +55,6 @@ export async function POST(
     return NextResponse.json({ error: "Team not found in this game." }, { status: 404 });
   }
 
-// Prevent double answers
-const { data: existing } = await supabaseAdmin
-  .from("answers")
-  .select("id")
-  .eq("game_code", code)
-  .eq("team_id", teamId)
-  .eq("question_idx", questionIdx)
-  .maybeSingle();
-
-if (existing) {
-  return NextResponse.json({ locked: true, alreadyAnswered: true });
-}
 
   const startedAt = game.question_started_at
     ? new Date(game.question_started_at).getTime()
@@ -130,9 +118,11 @@ if (saveError) {
   return NextResponse.json({ error: saveError.message }, { status: 500 });
 }
 
-  if (insertErr) {
-    return NextResponse.json({ error: insertErr.message }, { status: 500 });
-  }
+// Intentionally do NOT return correctness/points here
+return NextResponse.json({ locked: true });
+
+// Intentionally do NOT return correctness/points here
+return NextResponse.json({ locked: true });
 
   // Intentionally do NOT return correctness/points here — the team screen
   // only shows "Answer Locked!" until the host reveals the answer.
