@@ -31,7 +31,6 @@ export default function TeamPlayPage() {
 
   const [question, setQuestion] = useState<RevealQuestion | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
-  const [locking, setLocking] = useState(false);
   const [myAnswers, setMyAnswers] = useState<Record<number, number>>({});
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[] | null>(null);
   const [confettiTrigger, setConfettiTrigger] = useState(0);
@@ -141,8 +140,7 @@ export default function TeamPlayPage() {
   }, [game?.phase, question, myAnswers]);
 
   async function selectAnswer(idx: number) {
-  if (!team || !game || locking || game.phase !== "question") return;
-
+  if (!team || !game || game.phase !== "question") return;
   soundEngine.click();
   setSelected(idx);
   setMyAnswers((prev) => ({ ...prev, [game.current_question]: idx }));
@@ -160,9 +158,6 @@ export default function TeamPlayPage() {
   } catch {
     /* server handles final scoring */
   }
-  finally {
-      setLocking(false);
-    }
   }
 
   const myRank = useMemo(() => {
