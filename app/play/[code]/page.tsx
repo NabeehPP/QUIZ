@@ -140,25 +140,27 @@ export default function TeamPlayPage() {
     }
   }, [game?.phase, question, myAnswers]);
 
-  async function lockAnswer(idx: number) {
-    if (!team || !game || selected !== null || locking) return;
-    soundEngine.click();
-    setSelected(idx);
-    setLocking(true);
-    setMyAnswers((prev) => ({ ...prev, [game.current_question]: idx }));
-    try {
-      await fetch(`/api/game/${code}/answer`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          teamId: team.teamId,
-          questionIdx: game.current_question,
-          selectedIndex: idx,
-        }),
-      });
-    } catch {
-      /* keep the optimistic lock either way — server is source of truth for scoring */
-    } finally {
+  async function selectAnswer(idx: number) {
+  if (!team || !game || locking || game.phase !== "question") return;
+
+  soundEngine.click();
+  setSelected(idx);
+  setMyAnswers((prev) => ({ ...prev, [game.current_question]: idx }));
+
+  try {
+    await fetch(`/api/game/${code}/answer`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        teamId: team.teamId,
+        questionIdx: game.current_question,
+        selectedIndex: idx,
+      }),
+    });
+  } catch {
+    /* server handles final scoring */
+  }
+  finally {
       setLocking(false);
     }
   }
@@ -297,14 +299,14 @@ export default function TeamPlayPage() {
               </div>
 
               {selected !== null && game.phase === "question" && (
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="mb-4 font-display font-extrabold text-gamegreen text-xl flex items-center gap-2"
-                >
-                  🔒 Answer Locked!
-                </motion.div>
-              )}
+              <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="mb-4 font-display font-bold text-gamegreen text-sm"
+             >
+             Answer selected
+            </motion.div>
+            )}
 
               <div className="grid grid-cols-1 gap-3 w-full">
                 {question.options.map((opt, i) => {
@@ -317,9 +319,9 @@ export default function TeamPlayPage() {
                   return (
                     <motion.button
                       key={i}
-                      disabled={selected !== null || game.phase === "reveal"}
-                      onClick={() => lockAnswer(i)}
-                      whileHover={selected === null ? { scale: 1.02 } : {}}
+                     disabled={game.phase === "reveal"}
+                     onClick={() => selectAnswer(i)}
+                     whileHover={game.phase === "question" ? { scale: 1.02 } : {}}
                       whileTap={{ scale: 0.96 }}
                       animate={
                         isCorrectOpt

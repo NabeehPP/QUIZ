@@ -55,18 +55,18 @@ export async function POST(
     return NextResponse.json({ error: "Team not found in this game." }, { status: 404 });
   }
 
-  // Prevent double answers
-  const { data: existing } = await supabaseAdmin
-    .from("answers")
-    .select("id")
-    .eq("game_code", code)
-    .eq("team_id", teamId)
-    .eq("question_idx", questionIdx)
-    .maybeSingle();
+// Prevent double answers
+const { data: existing } = await supabaseAdmin
+  .from("answers")
+  .select("id")
+  .eq("game_code", code)
+  .eq("team_id", teamId)
+  .eq("question_idx", questionIdx)
+  .maybeSingle();
 
-  if (existing) {
-    return NextResponse.json({ locked: true, alreadyAnswered: true });
-  }
+if (existing) {
+  return NextResponse.json({ locked: true, alreadyAnswered: true });
+}
 
   const startedAt = game.question_started_at
     ? new Date(game.question_started_at).getTime()
@@ -92,7 +92,29 @@ export async function POST(
     points = BASE_POINTS + speedBonus;
   }
 
-  const { error: insertErr } = await supabaseAdmin.from("answers").insert({
+  const { data: existing } = await supabaseAdmin
+  .from("answers")
+  .select("id")
+  .eq("game_code", code)
+  .eq("team_id", teamId)
+  .eq("question_idx", questionIdx)
+  .maybeSingle();
+
+let saveError;
+
+if (existing) {
+  const { error } = await supabaseAdmin
+    .from("answers")
+    .update({
+      selected_index: selectedIndex,
+      is_correct: isCorrect,
+      points,
+    })
+    .eq("id", existing.id);
+
+  saveError = error;
+} else {
+  const { error } = await supabaseAdmin.from("answers").insert({
     game_code: code,
     team_id: teamId,
     question_idx: questionIdx,
@@ -100,6 +122,13 @@ export async function POST(
     is_correct: isCorrect,
     points,
   });
+
+  saveError = error;
+}
+
+if (saveError) {
+  return NextResponse.json({ error: saveError.message }, { status: 500 });
+}
 
   if (insertErr) {
     return NextResponse.json({ error: insertErr.message }, { status: 500 });
