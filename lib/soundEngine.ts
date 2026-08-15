@@ -31,10 +31,16 @@ class SoundEngine {
     this.master.gain.cancelScheduledValues(now);
 
     this.master.gain.setTargetAtTime(
-      value ? 0.75 : 0,
+      value ? 0.82 : 0,
       now,
-      0.03
+      0.04
     );
+
+    if (!value) {
+      this.stopMusic();
+    } else if (!this.musicPlaying) {
+      this.startMusic();
+    }
   }
 
   /**
@@ -66,14 +72,14 @@ class SoundEngine {
 
     this.master = this.ctx.createGain();
 
-    this.master.gain.value = this._enabled ? 0.75 : 0;
+    this.master.gain.value = this._enabled ? 0.82 : 0;
 
     this.master.connect(this.ctx.destination);
 
     this.musicGain = this.ctx.createGain();
 
-    // Background music is intentionally quiet.
-    this.musicGain.gain.value = 0.08;
+    // Keep music present but safely underneath the quiz sounds.
+    this.musicGain.gain.value = 0.11;
 
     this.musicGain.connect(this.master);
 
@@ -117,21 +123,21 @@ class SoundEngine {
     freq: number,
     startOffset: number,
     duration: number,
-    opts: {
-      type?: OscType;
-      gain?: number;
-      sweepTo?: number;
-      destination?: GainNode;
-    } = {}
+   opts: {
+  type?: OscType;
+  gain?: number;
+  sweepTo?: number;
+  destination?: GainNode;
+} = {}
   ) {
     if (!this.ctx || !this.master) return;
 
-    const {
-      type = "sine",
-      gain = 0.2,
-      sweepTo,
-      destination = this.master,
-    } = opts;
+ const {
+  type = "sine",
+  gain = 0.2,
+  sweepTo,
+  destination = this.master,
+} = opts;
 
     const ctx = this.ctx;
 
@@ -264,10 +270,11 @@ class SoundEngine {
   // ============================================================
 
   /**
-   * Start a very light looping game-show background.
+   * Light game-show background music.
    *
-   * This is intentionally subtle:
-   * soft triangle waves + simple notes + tiny percussion.
+   * It uses a simple four-chord progression with a soft bass pulse
+   * and a small arpeggio. It is designed to stay underneath speech
+   * and quiz effects rather than dominate them.
    */
   startMusic() {
     if (
@@ -282,28 +289,22 @@ class SoundEngine {
     this.musicPlaying = true;
     this.musicStep = 0;
 
-    // Roughly 100 BPM.
-    const interval = 600;
+    // About 107 BPM.
+    const interval = 560;
 
     this.playMusicStep();
 
-    this.musicTimer = window.setInterval(
-      () => {
-        this.playMusicStep();
-      },
-      interval
-    );
+    this.musicTimer = window.setInterval(() => {
+      this.playMusicStep();
+    }, interval);
   }
 
   /**
-   * Stop the background music.
+   * Stop the background music loop.
    */
   stopMusic() {
     if (this.musicTimer !== null) {
-      window.clearInterval(
-        this.musicTimer
-      );
-
+      window.clearInterval(this.musicTimer);
       this.musicTimer = null;
     }
 
@@ -311,35 +312,36 @@ class SoundEngine {
   }
 
   /**
-   * Lower the music temporarily.
+   * Lower the music while an important UI sound is playing.
    */
   private duckMusic() {
     if (!this.ctx || !this.musicGain) return;
 
-    const now =
-      this.ctx.currentTime;
+    const now = this.ctx.currentTime;
 
     this.musicGain.gain.cancelScheduledValues(now);
 
     this.musicGain.gain.setTargetAtTime(
       0.025,
       now,
-      0.03
+      0.025
     );
 
     this.musicGain.gain.setTargetAtTime(
-      0.08,
-      now + 0.7,
-      0.2
+      0.11,
+      now + 0.45,
+      0.18
     );
   }
 
   /**
-   * Play one step of the background sequence.
-   *
-   * Simple progression:
-   *
+   * Four-chord game-show progression:
    * C → G → Am → F
+   *
+   * Each step has:
+   *   1. soft chord
+   *   2. low bass note
+   *   3. tiny high arpeggio accent
    */
   private playMusicStep() {
     if (
@@ -350,50 +352,66 @@ class SoundEngine {
       return;
     }
 
-    const progression = [
-      261.63, // C4
-      392.0,  // G4
-      440.0,  // A4
-      349.23, // F4
+    const chords = [
+      [261.63, 329.63, 392.0],   // C major
+      [196.0, 246.94, 392.0],    // G major
+      [220.0, 261.63, 329.63],   // A minor
+      [174.61, 220.0, 349.23],   // F major
     ];
 
-    const root =
-      progression[
-        this.musicStep % progression.length
-      ];
+    const bassNotes = [
+      130.81, // C3
+      98.0,   // G2
+      110.0,  // A2
+      87.31,  // F2
+    ];
 
-    // Very soft main note.
+    const chord = chords[this.musicStep % chords.length];
+    const bass = bassNotes[this.musicStep % bassNotes.length];
+
+    // Soft chord bed.
+    chord.forEach((frequency, index) => {
+      this.tone(
+        frequency,
+        index * 0.035,
+        0.48,
+        {
+          type: "triangle",
+          gain: 0.022,
+          destination: this.musicGain!,
+        }
+      );
+    });
+
+    // Gentle bass pulse.
     this.tone(
-      root,
+      bass,
       0,
-      0.45,
+      0.22,
       {
-        type: "triangle",
+        type: "sine",
         gain: 0.035,
         destination: this.musicGain,
       }
     );
 
-    // Small high accent every second step.
+    // Small sparkle every second step.
     if (this.musicStep % 2 === 1) {
       this.tone(
-        root * 2,
-        0.15,
-        0.25,
+        chord[2] * 2,
+        0.18,
+        0.18,
         {
           type: "sine",
           gain: 0.018,
           destination: this.musicGain,
         }
       );
-    }
 
-    // Extremely subtle pulse.
-    if (this.musicStep % 2 === 0) {
       this.tone(
-        110,
-        0,
-        0.08,
+        chord[1] * 2,
+        0.34,
+        0.12,
         {
           type: "sine",
           gain: 0.012,
@@ -566,7 +584,7 @@ class SoundEngine {
   /**
    * Correct answer.
    *
-   * Bright C → E → G → C celebration.
+   * Bright four-note celebration.
    */
   correct() {
     if (
@@ -578,43 +596,31 @@ class SoundEngine {
 
     this.duckMusic();
 
-    this.tone(
+    const notes = [
       523.25,
-      0,
-      0.14,
-      {
-        type: "triangle",
-        gain: 0.25,
-      }
-    );
-
-    this.tone(
       659.25,
-      0.09,
-      0.14,
-      {
-        type: "triangle",
-        gain: 0.25,
-      }
-    );
-
-    this.tone(
       783.99,
-      0.18,
-      0.14,
-      {
-        type: "triangle",
-        gain: 0.25,
-      }
-    );
-
-    this.tone(
       1046.5,
-      0.29,
+    ];
+
+    notes.forEach((frequency, index) => {
+      this.tone(
+        frequency,
+        index * 0.09,
+        index === 3 ? 0.30 : 0.14,
+        {
+          type: index === 3 ? "sine" : "triangle",
+          gain: index === 3 ? 0.25 : 0.23,
+        }
+      );
+    });
+
+    this.noiseBurst(
+      0.28,
       0.25,
       {
-        type: "sine",
-        gain: 0.22,
+        gain: 0.025,
+        lowpass: 3200,
       }
     );
   }
@@ -622,29 +628,41 @@ class SoundEngine {
   /**
    * Incorrect answer.
    *
-   * Short and soft, not an aggressive buzzer.
+   * Two-note game-show buzzer. Strong enough to hear clearly,
+   * but short enough not to become annoying.
    */
-incorrect() {
-  if (
-    !this.ready ||
-    this.throttled("incorrect", 300)
-  ) {
-    return;
-  }
-
-  this.duckMusic();
-
-  this.tone(
-    180,
-    0,
-    0.28,
-    {
-      type: "sawtooth",
-      gain: 0.32,
-      sweepTo: 110,
+  incorrect() {
+    if (
+      !this.ready ||
+      this.throttled("incorrect", 300)
+    ) {
+      return;
     }
-  );
-}
+
+    this.duckMusic();
+
+    this.tone(
+      260,
+      0,
+      0.16,
+      {
+        type: "square",
+        gain: 0.28,
+        sweepTo: 150,
+      }
+    );
+
+    this.tone(
+      180,
+      0.12,
+      0.22,
+      {
+        type: "square",
+        gain: 0.30,
+        sweepTo: 105,
+      }
+    );
+  }
 
   /**
    * Suspense before answer reveal.
@@ -682,6 +700,8 @@ incorrect() {
 
   /**
    * Time is up.
+   *
+   * Clear descending buzzer so the end of the question is obvious.
    */
   timeUp() {
     if (
@@ -694,22 +714,35 @@ incorrect() {
     this.duckMusic();
 
     this.tone(
-      330,
+      392,
       0,
       0.12,
       {
         type: "square",
-        gain: 0.15,
+        gain: 0.20,
+        sweepTo: 300,
       }
     );
 
     this.tone(
-      220,
+      262,
       0.12,
-      0.2,
+      0.18,
       {
         type: "square",
-        gain: 0.13,
+        gain: 0.22,
+        sweepTo: 180,
+      }
+    );
+
+    this.tone(
+      175,
+      0.27,
+      0.24,
+      {
+        type: "square",
+        gain: 0.24,
+        sweepTo: 120,
       }
     );
   }
