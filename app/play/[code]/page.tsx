@@ -341,11 +341,18 @@ export default function TeamPlayPage() {
                       <span className="w-8 h-8 flex items-center justify-center rounded-full bg-ink text-white font-black text-sm shrink-0">
                         {OPTION_LETTERS[i]}
                       </span>
-                      <span className="flex-1">{opt}</span>
-                      {isCorrectOpt && <span className="text-2xl">✅</span>}
-                      {showResult && isSelected && !isCorrectOpt && (
-                        <span className="text-2xl">❌</span>
-                      )}
+                      <span className="flex-1 pr-10">{opt}</span>
+                      {isCorrectOpt && (
+  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-2xl z-20">
+    ✅
+  </span>
+)}
+
+{showResult && isSelected && !isCorrectOpt && (
+  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-2xl z-20">
+    ❌
+  </span>
+)}
                     </motion.button>
                   );
                 })}

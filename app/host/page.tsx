@@ -48,7 +48,7 @@ export default function HostEntryPage() {
         <div className="text-5xl mb-4">🖥️</div>
         <h1 className="font-display font-black text-3xl mb-2">Host Console</h1>
         <p className="text-white/70 mb-8 text-sm">
-          Create a new game to display on the projector. Up to 7 teams can join
+          Create a new game to display on the projector. Up to 8 teams can join
           using the code or QR that appears next.
         </p>
 

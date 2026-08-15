@@ -231,21 +231,21 @@ export default function HostProjectorPage() {
                   </button>
                   {testMode && (
                     <span className="text-xs text-gameorange font-semibold">
-                      Dev only — start with just 1 team
+                      Dev only
                     </span>
                   )}
                 </div>
 
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="font-display font-extrabold text-xl">
-                    Teams joined ({teams.length}/7)
+                    Teams joined ({teams.length}/8)
                   </h2>
                   <motion.button
                     onClick={startQuiz}
-                    disabled={(testMode ? teams.length === 0 : teams.length !== 7) || busy}
+                    disabled={(testMode ? teams.length === 0 : teams.length !== 8) || busy}
                     whileHover={{
                       scale:
-                        (testMode ? teams.length === 0 : teams.length !== 7) || busy
+                        (testMode ? teams.length === 0 : teams.length !== 8) || busy
                           ? 1
                           : 1.04,
                     }}
