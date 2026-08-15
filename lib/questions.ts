@@ -7,191 +7,179 @@ export interface FullQuestion {
   explanation: string;
 }
 
-export const TIME_LIMIT_SECONDS = 15;
+export const TIME_LIMIT_SECONDS = 40;
 
 // This file lives on the server only and is never bundled to the client.
-// Feel free to edit these before the event — keep exactly 15 questions,
+// Feel free to edit these before the event. Keep exactly 15 questions,
 // each with exactly 4 options.
 export const QUESTIONS: FullQuestion[] = [
   {
-    question: "What officially counts as \"ragging\" under UGC regulations?",
+    question: "Anti Ragging Day in India is observed on:",
     options: [
-      "Only physical violence against a junior",
-      "Any act that causes physical, psychological or mental harm to a fresher, including teasing, humiliation or forced compliance",
-      "Only online bullying between students",
-      "Only actions reported by faculty",
+      "August 10",
+      "August 12",
+      "August 15",
+      "August 18",
     ],
     correctIndex: 1,
     explanation:
-      "UGC regulations define ragging broadly — it includes verbal abuse, humiliation, forced tasks, and psychological harm, not just physical violence.",
+      "Anti Ragging Day is observed every year on August 12 to create awareness about preventing ragging in educational institutions.",
   },
   {
-    question: "A senior asks a fresher to sing/dance publicly \"or else.\" This is:",
+    question: "Which organisation issued the Regulations on Curbing the Menace of Ragging in Higher Educational Institutions?",
     options: [
-      "A harmless college tradition",
-      "Ragging — forced performance under threat is a punishable act",
-      "Allowed if seniors say it's \"for fun\"",
-      "Only a problem if it's filmed",
+      "AICTE",
+      "UGC",
+      "NTA",
+      "NCERT",
     ],
     correctIndex: 1,
     explanation:
-      "Forcing anyone to perform under threat or pressure is ragging, regardless of intent — traditions don't excuse coercion.",
+      "The University Grants Commission, or UGC, issued the regulations to prevent and address ragging in higher educational institutions.",
   },
   {
-    question: "What should you do first if you witness ragging?",
+    question: "Which of the following can constitute ragging?",
     options: [
-      "Ignore it — it's not your problem",
-      "Film it for social media",
-      "Safely intervene if possible, then report it to the Anti-Ragging Committee or helpline",
-      "Wait to see if it happens again",
+      "Physical harassment",
+      "Psychological harassment",
+      "Humiliation or intimidation",
+      "All of the above",
+    ],
+    correctIndex: 3,
+    explanation:
+      "Ragging can involve physical, verbal, psychological or humiliating acts. Physical violence is not required for an act to be considered ragging.",
+  },
+  {
+    question: "In which year did the UGC Regulations on Curbing the Menace of Ragging come into force?",
+    options: [
+      "2005",
+      "2007",
+      "2009",
+      "2011",
     ],
     correctIndex: 2,
     explanation:
-      "Bystanders play a key role — safely stepping in or promptly reporting can stop harm before it escalates.",
+      "The UGC Regulations on Curbing the Menace of Ragging in Higher Educational Institutions came into force in 2009.",
   },
   {
-    question: "India's national anti-ragging helpline is:",
+    question: "A senior politely asks a fresher to introduce themselves. The fresher willingly participates, with no threat, pressure or humiliation. Is this automatically ragging?",
     options: [
-      "A UGC toll-free helpline (1800-180-5522) monitored 24x7",
-      "Only your class WhatsApp group",
-      "There is no national helpline",
-      "Only available to final-year students",
+      "Yes, because a senior gave the instruction",
+      "Yes, because the student is a fresher",
+      "No, not necessarily",
+      "Yes, if other students are watching",
+    ],
+    correctIndex: 2,
+    explanation:
+      "A normal and voluntary interaction between seniors and juniors is not automatically ragging. Coercion, humiliation or harassment can change the situation.",
+  },
+  {
+    question: "Who headed the committee that examined the issue of ragging and recommended preventive measures?",
+    options: [
+      "R.K. Raghavan",
+      "Sanjay Dhande",
+      "K. Radhakrishnan",
+      "U.R. Rao",
     ],
     correctIndex: 0,
     explanation:
-      "The UGC runs a 24x7 toll-free anti-ragging helpline that any student can call anonymously.",
+      "The committee was headed by R.K. Raghavan and its recommendations played an important role in developing India's anti ragging framework.",
   },
   {
-    question: "Can a victim of ragging file a complaint anonymously?",
+    question: "Anti Ragging Week is observed from:",
     options: [
-      "No, full identity must always be revealed",
-      "Yes — anonymous and confidential complaints are accepted and protected",
-      "Only parents can file complaints",
-      "Only after graduating",
-    ],
-    correctIndex: 1,
-    explanation:
-      "Institutions are required to accept anonymous complaints and protect the identity of whistleblowers.",
-  },
-  {
-    question: "Which of these is an example of psychological ragging?",
-    options: [
-      "Helping a junior find their classroom",
-      "Repeatedly mocking or isolating a junior to make them feel unwelcome",
-      "Introducing yourself to a new student",
-      "Inviting juniors to a club fair",
-    ],
-    correctIndex: 1,
-    explanation:
-      "Ragging isn't only physical — humiliation, mockery, and deliberate isolation cause real psychological harm.",
-  },
-  {
-    question: "Under Indian law, ragging can lead to punishment that includes:",
-    options: [
-      "A verbal warning only, always",
-      "Nothing — it's a civil matter only",
-      "Suspension, expulsion, and even criminal prosecution depending on severity",
-      "A fine payable to the senior's club",
+      "August 1 to 7",
+      "August 5 to 11",
+      "August 12 to 18",
+      "August 15 to 21",
     ],
     correctIndex: 2,
     explanation:
-      "Ragging is a punishable offence — consequences range from suspension/expulsion to criminal charges in serious cases.",
+      "Anti Ragging Week is observed from August 12 to August 18 as part of the national anti ragging awareness campaign.",
   },
   {
-    question: "What is the safest first step for a new student facing ragging?",
+    question: "Which statement about ragging is correct?",
     options: [
-      "Stay silent to avoid \"trouble\"",
-      "Tell a trusted senior, warden, mentor, or use the anti-ragging helpline immediately",
-      "Handle it alone by retaliating",
-      "Leave the college immediately",
-    ],
-    correctIndex: 1,
-    explanation:
-      "Speaking up early to a trusted adult or official channel is the safest and most effective response.",
-  },
-  {
-    question: "\"It happened to us, so it's fine to do it to juniors.\" This mindset is:",
-    options: [
-      "A fair tradition worth continuing",
-      "A harmful cycle — past harm never justifies repeating it",
-      "Only wrong if seniors get caught",
-      "Acceptable if juniors don't complain",
-    ],
-    correctIndex: 1,
-    explanation:
-      "Passing on harm doesn't make it fair — breaking the cycle is what builds a safe, respectful campus culture.",
-  },
-  {
-    question: "Every college in India is required to have:",
-    options: [
-      "An Anti-Ragging Committee and Anti-Ragging Squad",
-      "No formal anti-ragging structure — it's optional",
-      "Only a suggestion box",
-      "A ragging awareness poster, and nothing else",
-    ],
-    correctIndex: 0,
-    explanation:
-      "UGC mandates every institution to set up an Anti-Ragging Committee (policy/oversight) and Squad (active monitoring).",
-  },
-  {
-    question: "A group repeatedly sends embarrassing memes about a junior in a class group chat. This is:",
-    options: [
-      "Not ragging since it's online, not in person",
-      "Cyber-ragging — online harassment is still ragging",
-      "Fine as long as it's \"just jokes\"",
-      "Only ragging if the junior responds angrily",
-    ],
-    correctIndex: 1,
-    explanation:
-      "Ragging isn't limited to physical spaces — online humiliation and harassment are equally serious and punishable.",
-  },
-  {
-    question: "What's the healthiest way seniors can welcome juniors?",
-    options: [
-      "Testing their \"loyalty\" with tasks",
-      "Ignoring them completely",
-      "Genuine mentorship — guidance, friendship, and helping them settle in",
-      "Comparing them unfavorably to their own batch",
+      "Physical violence must always occur",
+      "Only first year students can be victims",
+      "Psychological or verbal harassment can also constitute ragging",
+      "Ragging is acceptable if the student initially agrees",
     ],
     correctIndex: 2,
     explanation:
-      "Real seniority is shown through mentorship and support, not power games — it builds trust instead of fear.",
+      "Ragging is not limited to physical violence. Psychological pressure, humiliation, intimidation and verbal harassment can also constitute ragging.",
   },
   {
-    question: "If a fresher refuses a senior's \"instruction\" and faces threats for it, the fresher should:",
+    question: "Anti ragging undertakings are generally required from:",
     options: [
-      "Comply to avoid \"problems\"",
-      "Document what happened and report it — refusing is their right",
-      "Apologize to the senior",
-      "Switch colleges",
+      "Students only",
+      "Parents or guardians only",
+      "Students and their parents or guardians",
+      "Faculty members and students",
+    ],
+    correctIndex: 2,
+    explanation:
+      "Anti ragging undertakings are submitted by students along with their parents or guardians as part of the prevention process.",
+  },
+  {
+    question: "Seniors ask a fresher to sing in front of them. The fresher initially agrees but later asks to stop because they are uncomfortable. The seniors continue pressuring them. What is the key concern?",
+    options: [
+      "The activity was initially voluntary",
+      "The student later objected but was still pressured to continue",
+      "No physical force was used",
+      "Seniors are allowed to conduct such activities",
     ],
     correctIndex: 1,
     explanation:
-      "No student is obligated to comply with any senior's demands — documenting and reporting threats protects the fresher and others.",
+      "The important issue is that the student objected but continued to face pressure. Coercion and humiliation can make an activity ragging.",
   },
   {
-    question: "Why do anti-ragging efforts matter for everyone, not just freshers?",
+    question: "Which Supreme Court case is specifically referred to in the preamble of the UGC Anti Ragging Regulations, 2009?",
     options: [
-      "They don't — only freshers are ever affected",
-      "A safe, respectful campus benefits the whole community and its reputation",
-      "They matter only during orientation week",
-      "They're only relevant to hostel students",
+      "Vishaka v. State of Rajasthan",
+      "University of Kerala v. Council, Principals, Colleges and Others",
+      "T.M.A. Pai Foundation v. State of Karnataka",
+      "Maneka Gandhi v. Union of India",
     ],
     correctIndex: 1,
     explanation:
-      "A culture free of ragging improves mental health, retention, and trust for every student, senior and junior alike.",
+      "The preamble of the UGC Anti Ragging Regulations, 2009 refers to the Supreme Court case involving the University of Kerala and others.",
   },
   {
-    question: "The best one-line takeaway for today's session is:",
+    question: "Which of the following is NOT necessarily required for an act to constitute ragging?",
     options: [
-      "Ragging is harmless fun if nobody gets physically hurt",
-      "Know the signs. Speak up. Stand together.",
-      "It's tradition, so it must continue",
-      "Only report ragging if it happens to you personally",
+      "Humiliation",
+      "Intimidation",
+      "Psychological harm",
+      "Physical injury",
     ],
-    correctIndex: 1,
+    correctIndex: 3,
     explanation:
-      "Awareness, speaking up, and collective responsibility are what actually keep a campus safe for everyone.",
+      "Ragging does not require physical injury. Acts involving humiliation, intimidation, psychological harm or forced conduct can also fall under the definition.",
+  },
+  {
+    question: "According to the UGC regulations, action can be taken against a student who:",
+    options: [
+      "Only physically participates in ragging",
+      "Only organises a ragging activity",
+      "Rags, abets ragging, or participates in a conspiracy to promote ragging",
+      "Witnesses ragging but does not report it",
+    ],
+    correctIndex: 2,
+    explanation:
+      "The regulations provide for action against students who rag, abet ragging or participate in a conspiracy to promote ragging.",
+  },
+  {
+    question: "Four seniors plan a humiliating activity for freshers. One senior creates the plan and arranges the location but leaves before the activity begins. What is the most accurate interpretation?",
+    options: [
+      "No action can be taken because the student was absent",
+      "Only students who physically participated can be punished",
+      "The student may face action for assisting or abetting ragging",
+      "Action is possible only if someone suffers physical injury",
+    ],
+    correctIndex: 2,
+    explanation:
+      "Direct physical participation is not the only concern. Assisting, abetting or being involved in a plan to promote ragging can also lead to disciplinary action.",
   },
 ];
 

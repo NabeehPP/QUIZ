@@ -1,5 +1,6 @@
 "use client";
 
+import { Gamepad2, MonitorPlay } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import BackgroundShapes from "@/components/BackgroundShapes";
@@ -59,14 +60,16 @@ export default function LandingPage() {
             onClick={playClickSound}
             className="card-pop group relative font-display font-extrabold text-xl md:text-2xl px-10 py-5 rounded-2xl bg-gamegreen text-ink shadow-pop transition-transform duration-200 hover:scale-105 active:scale-95"
           >
-            🚀 JOIN GAME
+            <Gamepad2 className="mr-2 inline -translate-y-1 inline" size={40}/>
+            JOIN GAME
           </Link>
           <Link
             href="/host"
             onClick={playClickSound}
             className="card-pop font-display font-bold text-base px-6 py-4 rounded-2xl glass text-white transition-transform duration-200 hover:scale-105 active:scale-95"
           >
-            🖥️  HOST GAME
+            <MonitorPlay className="mr-2 inline" />
+            HOST GAME
           </Link>
         </motion.div>
 
