@@ -381,7 +381,11 @@ class SoundEngine {
         );
 
         this.musicGain.gain.setTargetAtTime(
+<<<<<<< HEAD
           0.025,
+=======
+          0.012,
+>>>>>>> 1352a3da3a49d0fbd6e15cb7e7c93cae33e1e8fc
           currentTime,
           0.12
         );
