@@ -279,7 +279,7 @@ class SoundEngine {
       this.musicAudio = new Audio("/audio/quiz-master.mp3");
       this.musicAudio.loop = true;
       this.musicAudio.preload = "auto";
-      this.musicAudio.volume = 0.02;
+      this.musicAudio.volume = 0.025;
     }
 
     this.musicPlaying = true;
@@ -313,7 +313,7 @@ class SoundEngine {
   private duckMusic() {
     if (!this.musicAudio || !this.musicPlaying) return;
 
-    this.musicAudio.volume = 0.012;
+    this.musicAudio.volume = 0.004;
 
     if (this.musicResumeTimer !== null) {
       window.clearTimeout(this.musicResumeTimer);
@@ -321,7 +321,7 @@ class SoundEngine {
 
     this.musicResumeTimer = window.setTimeout(() => {
       if (this.musicAudio && this.musicPlaying) {
-        this.musicAudio.volume = 0.02;
+        this.musicAudio.volume = 0.025;
       }
 
       this.musicResumeTimer = null;
