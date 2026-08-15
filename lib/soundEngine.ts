@@ -7,6 +7,7 @@ class SoundEngine {
   private master: GainNode | null = null;
   private musicGain: GainNode | null = null;
   private musicAudio: HTMLAudioElement | null = null;
+  private musicSource: MediaElementAudioSourceNode | null = null;
   private musicResumeTimer: number | null = null;
 
   private _enabled = true;
@@ -78,7 +79,7 @@ class SoundEngine {
     this.musicGain = this.ctx.createGain();
 
     // Keep music present but safely underneath the quiz sounds.
-    this.musicGain.gain.value = 1;
+    this.musicGain.gain.value = 0;
 
     this.musicGain.connect(this.master);
 
@@ -269,23 +270,47 @@ class SoundEngine {
   // ====
 
   /**
-   * Play the real quiz background track.
+   * Start the real quiz background track.
+   *
+   * The MP3 is routed through Web Audio so its volume can be
+   * controlled independently and ducked during action sounds.
+   *
    * File: public/audio/quiz-master.mp3
    */
   startMusic() {
-    if (!this._enabled || this.musicPlaying) return;
+    if (
+      !this._enabled ||
+      !this.ctx ||
+      !this.musicGain ||
+      this.musicPlaying
+    ) {
+      return;
+    }
 
     if (!this.musicAudio) {
       this.musicAudio = new Audio("/audio/quiz-master.mp3");
       this.musicAudio.loop = true;
       this.musicAudio.preload = "auto";
-      this.musicAudio.volume = 0.02;
+
+      this.musicSource = this.ctx.createMediaElementSource(
+        this.musicAudio
+      );
+
+      this.musicSource.connect(this.musicGain);
     }
+
+    const now = this.ctx.currentTime;
+
+    this.musicGain.gain.cancelScheduledValues(now);
+    this.musicGain.gain.setTargetAtTime(
+      0.025,
+      now,
+      0.04
+    );
 
     this.musicPlaying = true;
 
     this.musicAudio.play().catch(() => {
-      // Browser autoplay policy may require another user interaction.
       this.musicPlaying = false;
     });
   }
@@ -304,28 +329,66 @@ class SoundEngine {
       this.musicAudio.currentTime = 0;
     }
 
+    if (this.ctx && this.musicGain) {
+      const now = this.ctx.currentTime;
+
+      this.musicGain.gain.cancelScheduledValues(now);
+      this.musicGain.gain.setTargetAtTime(
+        0,
+        now,
+        0.03
+      );
+    }
+
     this.musicPlaying = false;
   }
 
   /**
-   * Lower the music temporarily while an important effect plays.
+   * Duck background music while an important action sound plays.
    */
   private duckMusic() {
-    if (!this.musicAudio || !this.musicPlaying) return;
+    if (
+      !this.ctx ||
+      !this.musicGain ||
+      !this.musicPlaying
+    ) {
+      return;
+    }
 
-    this.musicAudio.volume = 0.004;
+    const now = this.ctx.currentTime;
+
+    this.musicGain.gain.cancelScheduledValues(now);
+    this.musicGain.gain.setTargetAtTime(
+      0.004,
+      now,
+      0.015
+    );
 
     if (this.musicResumeTimer !== null) {
       window.clearTimeout(this.musicResumeTimer);
     }
 
     this.musicResumeTimer = window.setTimeout(() => {
-      if (this.musicAudio && this.musicPlaying) {
-        this.musicAudio.volume = 0.02;
+      if (
+        this.ctx &&
+        this.musicGain &&
+        this.musicPlaying
+      ) {
+        const currentTime = this.ctx.currentTime;
+
+        this.musicGain.gain.cancelScheduledValues(
+          currentTime
+        );
+
+        this.musicGain.gain.setTargetAtTime(
+          0.025,
+          currentTime,
+          0.12
+        );
       }
 
       this.musicResumeTimer = null;
-    }, 750);
+    }, 650);
   }
 
   // ====
