@@ -11,9 +11,6 @@ class SoundEngine {
 
   private _enabled = true;
   private musicPlaying = false;
-  private musicTimer: number | null = null;
-  private musicStep = 0;
-
   private lastPlayedAt: Record<string, number> = {};
 
   get enabled() {
@@ -267,16 +264,13 @@ class SoundEngine {
     source.stop(startTime + duration + 0.03);
   }
 
-  // ============================================================
+  // ====
   // BACKGROUND MUSIC
-  // ============================================================
+  // ====
 
   /**
-   * Light game-show background music.
-   *
-   * It uses a simple four-chord progression with a soft bass pulse
-   * and a small arpeggio. It is designed to stay underneath speech
-   * and quiz effects rather than dominate them.
+   * Play the real quiz background track.
+   * File: public/audio/quiz-master.mp3
    */
   startMusic() {
     if (!this._enabled || this.musicPlaying) return;
@@ -285,16 +279,20 @@ class SoundEngine {
       this.musicAudio = new Audio("/audio/quiz-master.mp3");
       this.musicAudio.loop = true;
       this.musicAudio.preload = "auto";
-      this.musicAudio.volume = 0.22;
+      this.musicAudio.volume = 0.20;
     }
 
     this.musicPlaying = true;
 
     this.musicAudio.play().catch(() => {
+      // Browser autoplay policy may require another user interaction.
       this.musicPlaying = false;
     });
   }
 
+  /**
+   * Stop and reset the background track.
+   */
   stopMusic() {
     if (this.musicResumeTimer !== null) {
       window.clearTimeout(this.musicResumeTimer);
@@ -309,10 +307,13 @@ class SoundEngine {
     this.musicPlaying = false;
   }
 
+  /**
+   * Lower the music temporarily while an important effect plays.
+   */
   private duckMusic() {
     if (!this.musicAudio || !this.musicPlaying) return;
 
-    this.musicAudio.volume = 0.055;
+    this.musicAudio.volume = 0.045;
 
     if (this.musicResumeTimer !== null) {
       window.clearTimeout(this.musicResumeTimer);
@@ -320,20 +321,16 @@ class SoundEngine {
 
     this.musicResumeTimer = window.setTimeout(() => {
       if (this.musicAudio && this.musicPlaying) {
-        this.musicAudio.volume = 0.22;
+        this.musicAudio.volume = 0.20;
       }
+
       this.musicResumeTimer = null;
-    }, 700);
+    }, 750);
   }
 
-  // Kept for compatibility with older code paths.
-  private playMusicStep() {
-    // Background music is now handled by the MP3.
-  }
-
-  // ============================================================
+  // ====
   // UI SOUNDS
-  // ============================================================
+  // ====
 
   /**
    * Small bright button click.
