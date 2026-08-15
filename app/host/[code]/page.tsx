@@ -256,9 +256,9 @@ export default function HostProjectorPage() {
                   </motion.button>
                 </div>
 
-                {!testMode && teams.length !== 7 && (
+                {!testMode && teams.length !== 8 && (
                   <p className="text-white/50 text-xs mb-3 -mt-2">
-                    Exactly 7 teams are required to start the real event. Enable Test
+                    Exactly 8 teams are required to start the real event. Enable Test
                     Mode above to try the quiz with fewer.
                   </p>
                 )}
@@ -281,7 +281,7 @@ export default function HostProjectorPage() {
                       {t.name}
                     </motion.div>
                   ))}
-                  {Array.from({ length: Math.max(0, 7 - teams.length) }).map((_, i) => (
+                  {Array.from({ length: Math.max(0, 8 - teams.length) }).map((_, i) => (
                     <div
                       key={`empty-${i}`}
                       className="rounded-2xl p-4 border-2 border-dashed border-white/20 text-white/30 text-center font-display"
