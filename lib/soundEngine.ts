@@ -6,6 +6,8 @@ class SoundEngine {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
   private musicGain: GainNode | null = null;
+  private musicAudio: HTMLAudioElement | null = null;
+  private musicResumeTimer: number | null = null;
 
   private _enabled = true;
   private musicPlaying = false;
@@ -79,7 +81,7 @@ class SoundEngine {
     this.musicGain = this.ctx.createGain();
 
     // Keep music present but safely underneath the quiz sounds.
-    this.musicGain.gain.value = 0.11;
+    this.musicGain.gain.value = 1;
 
     this.musicGain.connect(this.master);
 
@@ -277,150 +279,56 @@ class SoundEngine {
    * and quiz effects rather than dominate them.
    */
   startMusic() {
-    if (
-      !this.ctx ||
-      !this.musicGain ||
-      !this._enabled ||
-      this.musicPlaying
-    ) {
-      return;
+    if (!this._enabled || this.musicPlaying) return;
+
+    if (!this.musicAudio) {
+      this.musicAudio = new Audio("/audio/quiz-master.mp3");
+      this.musicAudio.loop = true;
+      this.musicAudio.preload = "auto";
+      this.musicAudio.volume = 0.22;
     }
 
     this.musicPlaying = true;
-    this.musicStep = 0;
 
-    // About 107 BPM.
-    const interval = 560;
-
-    this.playMusicStep();
-
-    this.musicTimer = window.setInterval(() => {
-      this.playMusicStep();
-    }, interval);
+    this.musicAudio.play().catch(() => {
+      this.musicPlaying = false;
+    });
   }
 
-  /**
-   * Stop the background music loop.
-   */
   stopMusic() {
-    if (this.musicTimer !== null) {
-      window.clearInterval(this.musicTimer);
-      this.musicTimer = null;
+    if (this.musicResumeTimer !== null) {
+      window.clearTimeout(this.musicResumeTimer);
+      this.musicResumeTimer = null;
+    }
+
+    if (this.musicAudio) {
+      this.musicAudio.pause();
+      this.musicAudio.currentTime = 0;
     }
 
     this.musicPlaying = false;
   }
 
-  /**
-   * Lower the music while an important UI sound is playing.
-   */
   private duckMusic() {
-    if (!this.ctx || !this.musicGain) return;
+    if (!this.musicAudio || !this.musicPlaying) return;
 
-    const now = this.ctx.currentTime;
+    this.musicAudio.volume = 0.055;
 
-    this.musicGain.gain.cancelScheduledValues(now);
+    if (this.musicResumeTimer !== null) {
+      window.clearTimeout(this.musicResumeTimer);
+    }
 
-    this.musicGain.gain.setTargetAtTime(
-      0.025,
-      now,
-      0.025
-    );
-
-    this.musicGain.gain.setTargetAtTime(
-      0.11,
-      now + 0.45,
-      0.18
-    );
+    this.musicResumeTimer = window.setTimeout(() => {
+      if (this.musicAudio && this.musicPlaying) {
+        this.musicAudio.volume = 0.22;
+      }
+      this.musicResumeTimer = null;
+    }, 700);
   }
 
-  /**
-   * Four-chord game-show progression:
-   * C → G → Am → F
-   *
-   * Each step has:
-   *   1. soft chord
-   *   2. low bass note
-   *   3. tiny high arpeggio accent
-   */
+  // Kept for compatibility with older code paths.
   private playMusicStep() {
-    if (
-      !this.ctx ||
-      !this.musicGain ||
-      !this._enabled
-    ) {
-      return;
-    }
-
-    const chords = [
-      [261.63, 329.63, 392.0],   // C major
-      [196.0, 246.94, 392.0],    // G major
-      [220.0, 261.63, 329.63],   // A minor
-      [174.61, 220.0, 349.23],   // F major
-    ];
-
-    const bassNotes = [
-      130.81, // C3
-      98.0,   // G2
-      110.0,  // A2
-      87.31,  // F2
-    ];
-
-    const chord = chords[this.musicStep % chords.length];
-    const bass = bassNotes[this.musicStep % bassNotes.length];
-
-    // Soft chord bed.
-    chord.forEach((frequency, index) => {
-      this.tone(
-        frequency,
-        index * 0.035,
-        0.48,
-        {
-          type: "triangle",
-          gain: 0.022,
-          destination: this.musicGain!,
-        }
-      );
-    });
-
-    // Gentle bass pulse.
-    this.tone(
-      bass,
-      0,
-      0.22,
-      {
-        type: "sine",
-        gain: 0.035,
-        destination: this.musicGain,
-      }
-    );
-
-    // Small sparkle every second step.
-    if (this.musicStep % 2 === 1) {
-      this.tone(
-        chord[2] * 2,
-        0.18,
-        0.18,
-        {
-          type: "sine",
-          gain: 0.018,
-          destination: this.musicGain,
-        }
-      );
-
-      this.tone(
-        chord[1] * 2,
-        0.34,
-        0.12,
-        {
-          type: "sine",
-          gain: 0.012,
-          destination: this.musicGain,
-        }
-      );
-    }
-
-    this.musicStep++;
+    // Background music is now handled by the MP3.
   }
 
   // ============================================================
@@ -444,6 +352,39 @@ class SoundEngine {
         gain: 0.16,
       }
     );
+  }
+
+  /**
+   * Short energetic quiz intro.
+   */
+  quizIntro() {
+    if (
+      !this.ready ||
+      this.throttled("intro", 800)
+    ) {
+      return;
+    }
+
+    this.duckMusic();
+
+    const notes = [392, 523.25, 659.25, 783.99, 1046.5];
+
+    notes.forEach((frequency, index) => {
+      this.tone(
+        frequency,
+        index * 0.10,
+        index === notes.length - 1 ? 0.35 : 0.12,
+        {
+          type: index === notes.length - 1 ? "sine" : "triangle",
+          gain: index === notes.length - 1 ? 0.27 : 0.20,
+        }
+      );
+    });
+
+    this.noiseBurst(0.42, 0.35, {
+      gain: 0.045,
+      lowpass: 4200,
+    });
   }
 
   /**
@@ -488,25 +429,26 @@ class SoundEngine {
 
     this.duckMusic();
 
-    this.tone(
-      523.25,
-      0,
-      0.1,
-      {
-        type: "triangle",
-        gain: 0.18,
-      }
-    );
+    this.tone(392, 0, 0.12, {
+      type: "triangle",
+      gain: 0.16,
+      sweepTo: 523.25,
+    });
 
-    this.tone(
-      783.99,
-      0.08,
-      0.16,
-      {
-        type: "triangle",
-        gain: 0.2,
-      }
-    );
+    this.tone(659.25, 0.08, 0.13, {
+      type: "triangle",
+      gain: 0.19,
+    });
+
+    this.tone(1046.5, 0.16, 0.22, {
+      type: "sine",
+      gain: 0.17,
+    });
+
+    this.noiseBurst(0.14, 0.20, {
+      gain: 0.018,
+      lowpass: 4500,
+    });
   }
 
   /**
@@ -517,15 +459,21 @@ class SoundEngine {
 
     this.duckMusic();
 
-    this.tone(
-      1046.5,
-      0,
-      0.07,
-      {
-        type: "sine",
-        gain: 0.2,
-      }
-    );
+    this.tone(880, 0, 0.075, {
+      type: "square",
+      gain: 0.16,
+      sweepTo: 1046.5,
+    });
+
+    this.tone(1318.5, 0.035, 0.055, {
+      type: "sine",
+      gain: 0.09,
+    });
+
+    this.noiseBurst(0, 0.035, {
+      gain: 0.018,
+      lowpass: 5000,
+    });
   }
 
   /**
@@ -536,15 +484,21 @@ class SoundEngine {
 
     this.duckMusic();
 
-    this.tone(
-      1318.5,
-      0,
-      0.08,
-      {
-        type: "triangle",
-        gain: 0.24,
-      }
-    );
+    this.tone(1046.5, 0, 0.10, {
+      type: "triangle",
+      gain: 0.22,
+      sweepTo: 1318.5,
+    });
+
+    this.tone(1568, 0.045, 0.09, {
+      type: "sine",
+      gain: 0.12,
+    });
+
+    this.noiseBurst(0, 0.055, {
+      gain: 0.025,
+      lowpass: 6000,
+    });
   }
 
   /**
@@ -560,25 +514,22 @@ class SoundEngine {
 
     this.duckMusic();
 
-    this.tone(
-      440,
-      0,
-      0.1,
-      {
-        type: "square",
-        gain: 0.13,
-      }
-    );
+    this.tone(440, 0, 0.11, {
+      type: "square",
+      gain: 0.16,
+      sweepTo: 330,
+    });
 
-    this.tone(
-      440,
-      0.13,
-      0.1,
-      {
-        type: "square",
-        gain: 0.13,
-      }
-    );
+    this.tone(440, 0.13, 0.11, {
+      type: "square",
+      gain: 0.18,
+      sweepTo: 330,
+    });
+
+    this.tone(220, 0.26, 0.14, {
+      type: "triangle",
+      gain: 0.12,
+    });
   }
 
   /**
@@ -601,16 +552,17 @@ class SoundEngine {
       659.25,
       783.99,
       1046.5,
+      1318.5,
     ];
 
     notes.forEach((frequency, index) => {
       this.tone(
         frequency,
-        index * 0.09,
-        index === 3 ? 0.30 : 0.14,
+        index * 0.075,
+        index >= 3 ? 0.28 : 0.13,
         {
-          type: index === 3 ? "sine" : "triangle",
-          gain: index === 3 ? 0.25 : 0.23,
+          type: index >= 3 ? "sine" : "triangle",
+          gain: index >= 3 ? 0.24 : 0.22,
         }
       );
     });
@@ -619,8 +571,8 @@ class SoundEngine {
       0.28,
       0.25,
       {
-        gain: 0.025,
-        lowpass: 3200,
+        gain: 0.035,
+        lowpass: 4000,
       }
     );
   }
@@ -765,6 +717,7 @@ class SoundEngine {
       659.25,
       783.99,
       1046.5,
+      1318.5,
     ];
 
     notes.forEach((frequency, index) => {
