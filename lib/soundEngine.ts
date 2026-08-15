@@ -624,27 +624,27 @@ class SoundEngine {
    *
    * Short and soft, not an aggressive buzzer.
    */
-  incorrect() {
-    if (
-      !this.ready ||
-      this.throttled("incorrect", 300)
-    ) {
-      return;
-    }
-
-    this.duckMusic();
-
-    this.tone(
-      220,
-      0,
-      0.18,
-      {
-        type: "triangle",
-        gain: 0.18,
-        sweepTo: 150,
-      }
-    );
+incorrect() {
+  if (
+    !this.ready ||
+    this.throttled("incorrect", 300)
+  ) {
+    return;
   }
+
+  this.duckMusic();
+
+  this.tone(
+    180,
+    0,
+    0.28,
+    {
+      type: "sawtooth",
+      gain: 0.32,
+      sweepTo: 110,
+    }
+  );
+}
 
   /**
    * Suspense before answer reveal.
