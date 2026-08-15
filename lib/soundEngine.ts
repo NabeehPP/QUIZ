@@ -377,7 +377,7 @@ class SoundEngine {
         0.48,
         {
           type: "triangle",
-          gain: 0.022,
+          gain: 0.14,
           destination: this.musicGain!,
         }
       );
@@ -390,7 +390,7 @@ class SoundEngine {
       0.22,
       {
         type: "sine",
-        gain: 0.035,
+        gain: 0.12,
         destination: this.musicGain,
       }
     );
@@ -403,7 +403,7 @@ class SoundEngine {
         0.18,
         {
           type: "sine",
-          gain: 0.018,
+          gain: 0.08,
           destination: this.musicGain,
         }
       );
@@ -414,7 +414,7 @@ class SoundEngine {
         0.12,
         {
           type: "sine",
-          gain: 0.012,
+          gain: 0.06,
           destination: this.musicGain,
         }
       );
