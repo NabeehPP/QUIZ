@@ -7,7 +7,7 @@ export interface FullQuestion {
   explanation: string;
 }
 
-export const TIME_LIMIT_SECONDS = 40;
+export const TIME_LIMIT_SECONDS = 30;
 
 // This file lives on the server only and is never bundled to the client.
 // Feel free to edit these before the event. Keep exactly 15 questions,
