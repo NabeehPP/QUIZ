@@ -1,186 +1,814 @@
 "use client";
 
-// Lightweight synthesized sound engine using the Web Audio API only.
-// No external audio files. Must be unlocked by a user gesture (browser
-// autoplay policy) — call soundEngine.unlock() from a click handler.
-
 type OscType = "sine" | "triangle" | "square" | "sawtooth";
 
 class SoundEngine {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
+  private musicGain: GainNode | null = null;
+
   private _enabled = true;
+  private musicPlaying = false;
+  private musicTimer: number | null = null;
+  private musicStep = 0;
+
   private lastPlayedAt: Record<string, number> = {};
 
   get enabled() {
     return this._enabled;
   }
 
+  /**
+   * Enable / disable all sounds.
+   */
   setEnabled(value: boolean) {
     this._enabled = value;
-    if (this.master && this.ctx) {
-      // Immediately silence in-flight sounds when turned off.
-      const now = this.ctx.currentTime;
-      this.master.gain.cancelScheduledValues(now);
-      this.master.gain.setValueAtTime(value ? 0.6 : 0, now);
-    }
+
+    if (!this.master || !this.ctx) return;
+
+    const now = this.ctx.currentTime;
+
+    this.master.gain.cancelScheduledValues(now);
+
+    this.master.gain.setTargetAtTime(
+      value ? 0.75 : 0,
+      now,
+      0.03
+    );
   }
 
-  /** Call from within a user-gesture event handler (click/tap). */
+  /**
+   * Must be called from a user interaction such as:
+   * Create Game / Start Quiz / Sound button.
+   */
   unlock() {
     if (this.ctx) {
-      if (this.ctx.state === "suspended") this.ctx.resume();
+      if (this.ctx.state === "suspended") {
+        this.ctx.resume();
+      }
+
+      if (!this.musicPlaying && this._enabled) {
+        this.startMusic();
+      }
+
       return;
     }
-    const Ctx =
-      window.AudioContext || (window as any).webkitAudioContext;
-    if (!Ctx) return;
-    this.ctx = new Ctx();
+
+    const AudioContextClass =
+      window.AudioContext ||
+      (window as typeof window & {
+        webkitAudioContext?: typeof AudioContext;
+      }).webkitAudioContext;
+
+    if (!AudioContextClass) return;
+
+    this.ctx = new AudioContextClass();
+
     this.master = this.ctx.createGain();
-    this.master.gain.value = this._enabled ? 0.6 : 0;
+
+    this.master.gain.value = this._enabled ? 0.75 : 0;
+
     this.master.connect(this.ctx.destination);
+
+    this.musicGain = this.ctx.createGain();
+
+    // Background music is intentionally quiet.
+    this.musicGain.gain.value = 0.08;
+
+    this.musicGain.connect(this.master);
+
+    if (this._enabled) {
+      this.startMusic();
+    }
   }
 
+  /**
+   * Whether the sound engine is ready.
+   */
   private get ready() {
-    return !!(this.ctx && this.master && this._enabled);
+    return !!(
+      this.ctx &&
+      this.master &&
+      this._enabled
+    );
   }
 
-  // Simple per-sound-id throttle so rapid duplicate triggers (e.g. realtime
-  // updates firing twice) never stack into an overlapping mess.
+  /**
+   * Prevent repeated sounds from stacking.
+   */
   private throttled(id: string, minGapMs: number) {
     const now = performance.now();
+
     const last = this.lastPlayedAt[id] ?? 0;
-    if (now - last < minGapMs) return true;
+
+    if (now - last < minGapMs) {
+      return true;
+    }
+
     this.lastPlayedAt[id] = now;
+
     return false;
   }
 
+  /**
+   * Create a musical tone.
+   */
   private tone(
     freq: number,
     startOffset: number,
     duration: number,
-    opts: { type?: OscType; gain?: number; sweepTo?: number } = {}
+    opts: {
+      type?: OscType;
+      gain?: number;
+      sweepTo?: number;
+      destination?: GainNode;
+    } = {}
   ) {
     if (!this.ctx || !this.master) return;
-    const { type = "sine", gain = 0.22, sweepTo } = opts;
-    const ctx = this.ctx;
-    const t0 = ctx.currentTime + startOffset;
 
-    const osc = ctx.createOscillator();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, t0);
+    const {
+      type = "sine",
+      gain = 0.2,
+      sweepTo,
+      destination = this.master,
+    } = opts;
+
+    const ctx = this.ctx;
+
+    const startTime =
+      ctx.currentTime + startOffset;
+
+    const oscillator =
+      ctx.createOscillator();
+
+    oscillator.type = type;
+
+    oscillator.frequency.setValueAtTime(
+      freq,
+      startTime
+    );
+
     if (sweepTo) {
-      osc.frequency.exponentialRampToValueAtTime(sweepTo, t0 + duration);
+      oscillator.frequency.exponentialRampToValueAtTime(
+        sweepTo,
+        startTime + duration
+      );
     }
 
-    const env = ctx.createGain();
-    env.gain.setValueAtTime(0.0001, t0);
-    env.gain.exponentialRampToValueAtTime(gain, t0 + Math.min(0.02, duration / 4));
-    env.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+    const envelope =
+      ctx.createGain();
 
-    osc.connect(env);
-    env.connect(this.master);
-    osc.start(t0);
-    osc.stop(t0 + duration + 0.02);
+    envelope.gain.setValueAtTime(
+      0.0001,
+      startTime
+    );
+
+    envelope.gain.exponentialRampToValueAtTime(
+      gain,
+      startTime + Math.min(0.025, duration / 4)
+    );
+
+    envelope.gain.exponentialRampToValueAtTime(
+      0.0001,
+      startTime + duration
+    );
+
+    oscillator.connect(envelope);
+    envelope.connect(destination);
+
+    oscillator.start(startTime);
+    oscillator.stop(startTime + duration + 0.03);
   }
 
+  /**
+   * Soft noise used for subtle transitions.
+   */
   private noiseBurst(
     startOffset: number,
     duration: number,
-    opts: { gain?: number; lowpass?: number } = {}
+    opts: {
+      gain?: number;
+      lowpass?: number;
+      destination?: GainNode;
+    } = {}
   ) {
     if (!this.ctx || !this.master) return;
-    const { gain = 0.15, lowpass = 1200 } = opts;
-    const ctx = this.ctx;
-    const t0 = ctx.currentTime + startOffset;
-    const sampleCount = Math.floor(ctx.sampleRate * duration);
-    const buffer = ctx.createBuffer(1, sampleCount, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < sampleCount; i++) {
-      data[i] = (Math.random() * 2 - 1) * (1 - i / sampleCount);
-    }
-    const src = ctx.createBufferSource();
-    src.buffer = buffer;
 
-    const filter = ctx.createBiquadFilter();
+    const {
+      gain = 0.06,
+      lowpass = 1500,
+      destination = this.master,
+    } = opts;
+
+    const ctx = this.ctx;
+
+    const startTime =
+      ctx.currentTime + startOffset;
+
+    const sampleCount =
+      Math.floor(ctx.sampleRate * duration);
+
+    const buffer =
+      ctx.createBuffer(
+        1,
+        sampleCount,
+        ctx.sampleRate
+      );
+
+    const data =
+      buffer.getChannelData(0);
+
+    for (let i = 0; i < sampleCount; i++) {
+      const fade =
+        1 - i / sampleCount;
+
+      data[i] =
+        (Math.random() * 2 - 1) *
+        fade;
+    }
+
+    const source =
+      ctx.createBufferSource();
+
+    source.buffer = buffer;
+
+    const filter =
+      ctx.createBiquadFilter();
+
     filter.type = "lowpass";
     filter.frequency.value = lowpass;
 
-    const env = ctx.createGain();
-    env.gain.setValueAtTime(gain, t0);
-    env.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+    const envelope =
+      ctx.createGain();
 
-    src.connect(filter);
-    filter.connect(env);
-    env.connect(this.master);
-    src.start(t0);
-    src.stop(t0 + duration + 0.02);
+    envelope.gain.setValueAtTime(
+      gain,
+      startTime
+    );
+
+    envelope.gain.exponentialRampToValueAtTime(
+      0.0001,
+      startTime + duration
+    );
+
+    source.connect(filter);
+    filter.connect(envelope);
+    envelope.connect(destination);
+
+    source.start(startTime);
+    source.stop(startTime + duration + 0.03);
   }
 
-  /** Subtle click for buttons / general UI interactions. */
+  // ============================================================
+  // BACKGROUND MUSIC
+  // ============================================================
+
+  /**
+   * Start a very light looping game-show background.
+   *
+   * This is intentionally subtle:
+   * soft triangle waves + simple notes + tiny percussion.
+   */
+  startMusic() {
+    if (
+      !this.ctx ||
+      !this.musicGain ||
+      !this._enabled ||
+      this.musicPlaying
+    ) {
+      return;
+    }
+
+    this.musicPlaying = true;
+    this.musicStep = 0;
+
+    // Roughly 100 BPM.
+    const interval = 600;
+
+    this.playMusicStep();
+
+    this.musicTimer = window.setInterval(
+      () => {
+        this.playMusicStep();
+      },
+      interval
+    );
+  }
+
+  /**
+   * Stop the background music.
+   */
+  stopMusic() {
+    if (this.musicTimer !== null) {
+      window.clearInterval(
+        this.musicTimer
+      );
+
+      this.musicTimer = null;
+    }
+
+    this.musicPlaying = false;
+  }
+
+  /**
+   * Lower the music temporarily.
+   */
+  private duckMusic() {
+    if (!this.ctx || !this.musicGain) return;
+
+    const now =
+      this.ctx.currentTime;
+
+    this.musicGain.gain.cancelScheduledValues(now);
+
+    this.musicGain.gain.setTargetAtTime(
+      0.025,
+      now,
+      0.03
+    );
+
+    this.musicGain.gain.setTargetAtTime(
+      0.08,
+      now + 0.7,
+      0.2
+    );
+  }
+
+  /**
+   * Play one step of the background sequence.
+   *
+   * Simple progression:
+   *
+   * C → G → Am → F
+   */
+  private playMusicStep() {
+    if (
+      !this.ctx ||
+      !this.musicGain ||
+      !this._enabled
+    ) {
+      return;
+    }
+
+    const progression = [
+      261.63, // C4
+      392.0,  // G4
+      440.0,  // A4
+      349.23, // F4
+    ];
+
+    const root =
+      progression[
+        this.musicStep % progression.length
+      ];
+
+    // Very soft main note.
+    this.tone(
+      root,
+      0,
+      0.45,
+      {
+        type: "triangle",
+        gain: 0.035,
+        destination: this.musicGain,
+      }
+    );
+
+    // Small high accent every second step.
+    if (this.musicStep % 2 === 1) {
+      this.tone(
+        root * 2,
+        0.15,
+        0.25,
+        {
+          type: "sine",
+          gain: 0.018,
+          destination: this.musicGain,
+        }
+      );
+    }
+
+    // Extremely subtle pulse.
+    if (this.musicStep % 2 === 0) {
+      this.tone(
+        110,
+        0,
+        0.08,
+        {
+          type: "sine",
+          gain: 0.012,
+          destination: this.musicGain,
+        }
+      );
+    }
+
+    this.musicStep++;
+  }
+
+  // ============================================================
+  // UI SOUNDS
+  // ============================================================
+
+  /**
+   * Small bright button click.
+   */
   click() {
     if (!this.ready) return;
-    this.tone(720, 0, 0.05, { type: "sine", gain: 0.12 });
+
+    this.duckMusic();
+
+    this.tone(
+      900,
+      0,
+      0.045,
+      {
+        type: "sine",
+        gain: 0.16,
+      }
+    );
   }
 
-  /** Short pleasant chime when a team joins the lobby. */
+  /**
+   * Team joins the lobby.
+   */
   teamJoin() {
-    if (!this.ready || this.throttled("join", 150)) return;
-    this.tone(660, 0, 0.12, { type: "triangle", gain: 0.16 });
-    this.tone(990, 0.08, 0.16, { type: "triangle", gain: 0.14 });
+    if (
+      !this.ready ||
+      this.throttled("join", 150)
+    ) {
+      return;
+    }
+
+    this.duckMusic();
+
+    this.tone(
+      659.25,
+      0,
+      0.12,
+      {
+        type: "triangle",
+        gain: 0.22,
+      }
+    );
+
+    this.tone(
+      987.77,
+      0.09,
+      0.18,
+      {
+        type: "triangle",
+        gain: 0.19,
+      }
+    );
   }
 
-  /** Single soft tick — used for the final 3 seconds of the countdown. */
+  /**
+   * Question starts.
+   */
+  questionStart() {
+    if (!this.ready) return;
+
+    this.duckMusic();
+
+    this.tone(
+      523.25,
+      0,
+      0.1,
+      {
+        type: "triangle",
+        gain: 0.18,
+      }
+    );
+
+    this.tone(
+      783.99,
+      0.08,
+      0.16,
+      {
+        type: "triangle",
+        gain: 0.2,
+      }
+    );
+  }
+
+  /**
+   * Countdown tick.
+   */
   countdownTick() {
     if (!this.ready) return;
-    this.tone(880, 0, 0.06, { type: "sine", gain: 0.14 });
+
+    this.duckMusic();
+
+    this.tone(
+      1046.5,
+      0,
+      0.07,
+      {
+        type: "sine",
+        gain: 0.2,
+      }
+    );
   }
 
-  /** Slightly more urgent tone for the "time almost over" warning. */
+  /**
+   * Final countdown tick.
+   */
+  finalCountdownTick() {
+    if (!this.ready) return;
+
+    this.duckMusic();
+
+    this.tone(
+      1318.5,
+      0,
+      0.08,
+      {
+        type: "triangle",
+        gain: 0.24,
+      }
+    );
+  }
+
+  /**
+   * Time almost over.
+   */
   timeWarning() {
-    if (!this.ready || this.throttled("warning", 500)) return;
-    this.tone(500, 0, 0.09, { type: "square", gain: 0.1 });
-    this.tone(500, 0.12, 0.09, { type: "square", gain: 0.1 });
+    if (
+      !this.ready ||
+      this.throttled("warning", 500)
+    ) {
+      return;
+    }
+
+    this.duckMusic();
+
+    this.tone(
+      440,
+      0,
+      0.1,
+      {
+        type: "square",
+        gain: 0.13,
+      }
+    );
+
+    this.tone(
+      440,
+      0.13,
+      0.1,
+      {
+        type: "square",
+        gain: 0.13,
+      }
+    );
   }
 
-  /** Pleasant ascending success sound for a correct answer. */
+  /**
+   * Correct answer.
+   *
+   * Bright C → E → G → C celebration.
+   */
   correct() {
-    if (!this.ready || this.throttled("correct", 300)) return;
-    this.tone(523.25, 0, 0.14, { type: "sine", gain: 0.18 }); // C5
-    this.tone(659.25, 0.09, 0.14, { type: "sine", gain: 0.18 }); // E5
-    this.tone(783.99, 0.18, 0.22, { type: "sine", gain: 0.18 }); // G5
+    if (
+      !this.ready ||
+      this.throttled("correct", 300)
+    ) {
+      return;
+    }
+
+    this.duckMusic();
+
+    this.tone(
+      523.25,
+      0,
+      0.14,
+      {
+        type: "triangle",
+        gain: 0.25,
+      }
+    );
+
+    this.tone(
+      659.25,
+      0.09,
+      0.14,
+      {
+        type: "triangle",
+        gain: 0.25,
+      }
+    );
+
+    this.tone(
+      783.99,
+      0.18,
+      0.14,
+      {
+        type: "triangle",
+        gain: 0.25,
+      }
+    );
+
+    this.tone(
+      1046.5,
+      0.29,
+      0.25,
+      {
+        type: "sine",
+        gain: 0.22,
+      }
+    );
   }
 
-  /** Soft low buzz for an incorrect answer — not harsh or arcade-like. */
+  /**
+   * Incorrect answer.
+   *
+   * Short and soft, not an aggressive buzzer.
+   */
   incorrect() {
-    if (!this.ready || this.throttled("incorrect", 300)) return;
-    this.tone(160, 0, 0.28, { type: "sine", gain: 0.15, sweepTo: 110 });
+    if (
+      !this.ready ||
+      this.throttled("incorrect", 300)
+    ) {
+      return;
+    }
+
+    this.duckMusic();
+
+    this.tone(
+      220,
+      0,
+      0.18,
+      {
+        type: "triangle",
+        gain: 0.18,
+        sweepTo: 150,
+      }
+    );
   }
 
-  /** Brief suspense swell right before the correct answer is revealed. */
+  /**
+   * Suspense before answer reveal.
+   */
   suspense() {
-    if (!this.ready || this.throttled("suspense", 400)) return;
-    this.tone(220, 0, 0.5, { type: "triangle", gain: 0.08, sweepTo: 440 });
-    this.noiseBurst(0, 0.5, { gain: 0.05, lowpass: 900 });
+    if (
+      !this.ready ||
+      this.throttled("suspense", 400)
+    ) {
+      return;
+    }
+
+    this.duckMusic();
+
+    this.tone(
+      196,
+      0,
+      0.45,
+      {
+        type: "triangle",
+        gain: 0.1,
+        sweepTo: 392,
+      }
+    );
+
+    this.noiseBurst(
+      0,
+      0.45,
+      {
+        gain: 0.035,
+        lowpass: 1000,
+      }
+    );
   }
 
-  /** Celebratory flourish when the whole quiz finishes. */
+  /**
+   * Time is up.
+   */
+  timeUp() {
+    if (
+      !this.ready ||
+      this.throttled("timeup", 500)
+    ) {
+      return;
+    }
+
+    this.duckMusic();
+
+    this.tone(
+      330,
+      0,
+      0.12,
+      {
+        type: "square",
+        gain: 0.15,
+      }
+    );
+
+    this.tone(
+      220,
+      0.12,
+      0.2,
+      {
+        type: "square",
+        gain: 0.13,
+      }
+    );
+  }
+
+  /**
+   * Quiz finished.
+   */
   gameOverFanfare() {
-    if (!this.ready || this.throttled("fanfare", 800)) return;
-    const notes = [523.25, 659.25, 783.99, 1046.5]; // C5 E5 G5 C6
-    notes.forEach((f, i) => {
-      this.tone(f, i * 0.11, 0.22, { type: "triangle", gain: 0.17 });
+    if (
+      !this.ready ||
+      this.throttled("fanfare", 800)
+    ) {
+      return;
+    }
+
+    this.stopMusic();
+
+    const notes = [
+      523.25,
+      659.25,
+      783.99,
+      1046.5,
+    ];
+
+    notes.forEach((frequency, index) => {
+      this.tone(
+        frequency,
+        index * 0.11,
+        0.22,
+        {
+          type: "triangle",
+          gain: 0.25,
+        }
+      );
     });
+
+    this.noiseBurst(
+      0.3,
+      0.35,
+      {
+        gain: 0.05,
+        lowpass: 3500,
+      }
+    );
   }
 
-  /** Short celebration accent for the podium reveal. */
+  /**
+   * Podium celebration.
+   */
   podiumCelebrate() {
-    if (!this.ready || this.throttled("podium", 800)) return;
-    this.tone(784, 0, 0.12, { type: "sine", gain: 0.16 });
-    this.tone(988, 0.1, 0.12, { type: "sine", gain: 0.16 });
-    this.tone(1318.5, 0.2, 0.28, { type: "sine", gain: 0.18 });
-    this.noiseBurst(0.02, 0.3, { gain: 0.04, lowpass: 3000 });
+    if (
+      !this.ready ||
+      this.throttled("podium", 800)
+    ) {
+      return;
+    }
+
+    this.stopMusic();
+
+    this.tone(
+      784,
+      0,
+      0.13,
+      {
+        type: "triangle",
+        gain: 0.23,
+      }
+    );
+
+    this.tone(
+      988,
+      0.1,
+      0.13,
+      {
+        type: "triangle",
+        gain: 0.23,
+      }
+    );
+
+    this.tone(
+      1318.5,
+      0.2,
+      0.3,
+      {
+        type: "sine",
+        gain: 0.25,
+      }
+    );
+
+    this.noiseBurst(
+      0.02,
+      0.3,
+      {
+        gain: 0.055,
+        lowpass: 3500,
+      }
+    );
   }
 }
 
-export const soundEngine = new SoundEngine();
+export const soundEngine =
+  new SoundEngine();
