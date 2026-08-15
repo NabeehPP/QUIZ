@@ -181,6 +181,18 @@ export const QUESTIONS: FullQuestion[] = [
     explanation:
       "Direct physical participation is not the only concern. Assisting, abetting or being involved in a plan to promote ragging can also lead to disciplinary action.",
   },
+  {
+    question: "Which of the following is a possible consequence of ragging under the UGC regulations?",
+    options: [
+      "Only a verbal warning",
+      "Suspension or cancellation of admission",
+      "Only a monetary fine",
+      "No action unless physical injury occurs",
+    ],
+    correctIndex: 1,
+    explanation:
+      "Depending on the severity of the incident, penalties can include suspension, cancellation of admission, rustication or expulsion.",
+  },
 ];
 
 if (QUESTIONS.length !== 15) {
