@@ -490,7 +490,7 @@ export default function TeamPlayPage() {
               </h2>
 
               <p className="text-white/70">
-                Sit tight — the host will start the quiz on the big screen.
+                Sit tight, the host will start the quiz on the big screen.
               </p>
 
               <div className="mt-8 glass rounded-2xl px-6 py-4 inline-block">
