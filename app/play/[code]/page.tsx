@@ -727,240 +727,199 @@ export default function TeamPlayPage() {
               key="results"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-center w-full max-w-3xl"
+              className="text-center w-full max-w-4xl px-2"
             >
-              {/* HEADER */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.92 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="mb-6"
-              >
-                <div className="flex justify-center mb-3">
-                  <motion.div
-                    animate={{
-                      y: [0, -5, 0],
-                      rotate: [0, 2, -2, 0],
-                    }}
-                    transition={{
-                      repeat: Infinity,
-                      duration: 3,
-                    }}
-                    className="relative"
-                  >
-                    <div className="absolute inset-0 bg-gameyellow/20 blur-2xl rounded-full" />
-
-                    <div className="relative w-20 h-20 rounded-3xl glass border border-gameyellow/30 flex items-center justify-center">
-                      <Trophy
-                        size={42}
-                        strokeWidth={2}
-                        className="text-gameyellow"
-                      />
-                    </div>
-                  </motion.div>
-                </div>
-
-                <div className="flex items-center justify-center gap-2">
-                  <Sparkles
-                    size={18}
-                    className="text-gameyellow"
-                  />
-
-                  <h2 className="text-shimmer animate-shimmer font-display font-black text-3xl md:text-4xl bg-clip-text text-transparent">
-                    FINAL RESULTS
-                  </h2>
-
-                  <Sparkles
-                    size={18}
-                    className="text-gameyellow"
-                  />
-                </div>
-
-                {leaderboard && (
-                  <p className="text-white/60 text-sm mt-2">
-                    {leaderboard.length}{" "}
-                    {leaderboard.length === 1 ? "team" : "teams"} competed
-                  </p>
-                )}
-              </motion.div>
-
               {leaderboard ? (
                 <>
-                  {/* YOUR RESULT */}
+                  <motion.div
+                    initial={{ opacity: 0, y: -12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.45 }}
+                    className="mb-5 md:mb-7"
+                  >
+                    <motion.div
+                      animate={{ y: [0, -5, 0], rotate: [0, 2, -2, 0] }}
+                      transition={{ repeat: Infinity, duration: 3 }}
+                      className="relative flex justify-center mb-3"
+                    >
+                      <div className="absolute inset-0 bg-gameyellow/20 blur-2xl rounded-full" />
+                      <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-3xl glass border border-gameyellow/30 flex items-center justify-center">
+                        <Trophy size={36} className="md:hidden text-gameyellow" strokeWidth={2} />
+                        <Trophy size={42} className="hidden md:block text-gameyellow" strokeWidth={2} />
+                      </div>
+                    </motion.div>
+
+                    <div className="flex items-center justify-center gap-2">
+                      <Sparkles size={17} className="text-gameyellow" />
+                      <h2 className="text-shimmer animate-shimmer font-display font-black text-3xl md:text-5xl bg-clip-text text-transparent">
+                        FINAL RESULTS
+                      </h2>
+                      <Sparkles size={17} className="text-gameyellow" />
+                    </div>
+
+                    <p className="mt-2 text-gameyellow/70 font-display font-bold text-[10px] md:text-xs uppercase tracking-[0.22em]">
+                      YOUR FINAL POSITION
+                    </p>
+
+                    <p className="text-white/40 text-xs mt-1">
+                      {leaderboard.length} {leaderboard.length === 1 ? "team" : "teams"} competed
+                    </p>
+                  </motion.div>
+
                   {myRank && (
                     <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2 }}
-                      className="mb-7"
+                      initial={{ opacity: 0, scale: 0.94, y: 10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      transition={{ type: "spring", stiffness: 170, damping: 16 }}
+                      className="relative overflow-hidden mb-6 rounded-3xl border border-gameyellow/45 bg-gameyellow/10 backdrop-blur-xl px-5 py-5 shadow-xl"
                     >
-                      <div className="relative overflow-hidden rounded-2xl border border-gameyellow/40 bg-gameyellow/10 px-5 py-4">
-                        <div className="absolute inset-0 bg-gameyellow/5 pointer-events-none" />
+                      <div className="absolute inset-0 bg-gameyellow/10 pointer-events-none" />
+                      <div className="relative flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-gameyellow/15 border border-gameyellow/20 flex items-center justify-center shrink-0">
+                          <CircleUserRound size={24} className="text-gameyellow" />
+                        </div>
 
-                        <div className="relative flex items-center gap-3">
-                          <div className="w-11 h-11 rounded-xl bg-gameyellow/15 flex items-center justify-center shrink-0">
-                            <CircleUserRound
-                              size={23}
-                              className="text-gameyellow"
-                            />
-                          </div>
+                        <div className="text-left min-w-0 flex-1">
+                          <p className="text-[10px] uppercase tracking-[0.18em] text-gameyellow/65 font-black">
+                            YOUR TEAM
+                          </p>
+                          <p className="font-display font-black text-lg md:text-xl truncate">
+                            {team.name}
+                          </p>
+                          <p className="text-xs text-white/40 mt-0.5">
+                            {myRank.entry.correct}/{game.total_questions} correct
+                          </p>
+                        </div>
 
-                          <div className="text-left min-w-0 flex-1">
-                            <p className="text-xs uppercase tracking-wider text-white/50 font-bold">
-                              Your result
-                            </p>
-
-                            <p className="font-display font-black text-lg truncate">
-                              {team.name}
-                            </p>
-                          </div>
-
-                          <div className="text-right shrink-0">
-                            <p className="font-display font-black text-2xl text-gameyellow">
-                              #{myRank.place}
-                            </p>
-
-                            <p className="text-xs text-white/50">
-                              {myRank.entry.score} pts
-                            </p>
-                          </div>
+                        <div className="text-right shrink-0">
+                          <p className="font-display font-black text-3xl text-gameyellow">
+                            #{myRank.place}
+                          </p>
+                          <p className="font-display font-bold text-xs text-white/45">
+                            {myRank.entry.score} POINTS
+                          </p>
                         </div>
                       </div>
                     </motion.div>
                   )}
 
-                  {/* TOP 3 PODIUM */}
                   {leaderboard.length > 0 && (
-                    <div className="mb-8">
+                    <motion.div
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.15 }}
+                      className="mb-7"
+                    >
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:items-end">
-                        {/* SECOND */}
                         {leaderboard[1] && (
                           <PodiumCard
                             entry={leaderboard[1]}
                             place={2}
-                            isMe={
-                              leaderboard[1].teamId === team.teamId
-                            }
+                            isMe={leaderboard[1].teamId === team.teamId}
                             delay={0.35}
                           />
                         )}
 
-                        {/* FIRST */}
                         {leaderboard[0] && (
                           <PodiumCard
                             entry={leaderboard[0]}
                             place={1}
-                            isMe={
-                              leaderboard[0].teamId === team.teamId
-                            }
+                            isMe={leaderboard[0].teamId === team.teamId}
                             delay={0.2}
                             winner
                           />
                         )}
 
-                        {/* THIRD */}
                         {leaderboard[2] && (
                           <PodiumCard
                             entry={leaderboard[2]}
                             place={3}
-                            isMe={
-                              leaderboard[2].teamId === team.teamId
-                            }
+                            isMe={leaderboard[2].teamId === team.teamId}
                             delay={0.5}
                           />
                         )}
                       </div>
-                    </div>
+                    </motion.div>
                   )}
 
-                  {/* REST OF LEADERBOARD */}
-                  {leaderboard.length > 3 && (
-                    <div className="text-left">
-                      <div className="flex items-center gap-2 mb-3 px-1">
-                        <Award
-                          size={17}
-                          className="text-white/60"
-                        />
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="text-left"
+                  >
+                    <div className="flex items-center justify-center gap-2 mb-3">
+                      <Award size={16} className="text-white/50" />
+                      <p className="font-display font-bold text-[10px] md:text-xs text-white/50 uppercase tracking-[0.2em]">
+                        Everyone's Position
+                      </p>
+                      <Award size={16} className="text-white/50" />
+                    </div>
 
-                        <p className="font-display font-bold text-sm text-white/60 uppercase tracking-wider">
-                          Complete rankings
-                        </p>
-                      </div>
-
-                      <div className="w-full max-h-[42vh] overflow-y-auto pr-1 space-y-2">
-                        {leaderboard.slice(3).map((entry, index) => {
-                          const actualPlace = index + 4;
-                          const isMe =
-                            entry.teamId === team.teamId;
+                    <div className="rounded-2xl border border-white/10 bg-black/15 backdrop-blur-sm p-2">
+                      <div className="w-full max-h-[34vh] overflow-y-auto pr-1 space-y-2">
+                        {leaderboard.map((entry, index) => {
+                          const place = index + 1;
+                          const isMe = entry.teamId === team.teamId;
 
                           return (
                             <motion.div
                               key={entry.teamId}
-                              initial={{
-                                opacity: 0,
-                                x: -20,
-                              }}
-                              animate={{
-                                opacity: 1,
-                                x: 0,
-                              }}
-                              transition={{
-                                delay: 0.55 + index * 0.06,
-                              }}
-                              className={`relative overflow-hidden flex items-center gap-3 rounded-2xl px-4 py-3.5 border transition-all ${
+                              initial={{ opacity: 0, x: -15 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.45 + index * 0.045 }}
+                              className={`relative overflow-hidden flex items-center gap-3 rounded-xl px-3 py-3 md:px-4 border transition-all ${
                                 isMe
-                                  ? "bg-gameyellow/10 border-gameyellow/60 shadow-lg"
+                                  ? "bg-gameyellow/10 border-gameyellow/60 shadow-lg shadow-gameyellow/5"
+                                  : index === 0
+                                  ? "bg-gameyellow/5 border-gameyellow/20"
                                   : "glass border-white/5"
                               }`}
                             >
-                              {/* RANK */}
-                              <div className="w-9 text-center shrink-0">
-                                <span className="font-display font-black text-white/60">
-                                  {actualPlace}
-                                </span>
+                              <div className="w-9 shrink-0 text-center">
+                                {index === 0 ? (
+                                  <Crown size={18} className="mx-auto text-gameyellow" />
+                                ) : index === 1 ? (
+                                  <Medal size={18} className="mx-auto text-white/80" />
+                                ) : index === 2 ? (
+                                  <Medal size={18} className="mx-auto text-white/55" />
+                                ) : (
+                                  <span className="font-display font-black text-white/50">
+                                    {place}
+                                  </span>
+                                )}
                               </div>
 
-                              {/* TEAM COLOR */}
                               <span
-                                className="w-3 h-3 rounded-full shrink-0 shadow-lg"
-                                style={{
-                                  backgroundColor: entry.color,
-                                }}
+                                className="w-2.5 h-2.5 rounded-full shrink-0"
+                                style={{ backgroundColor: entry.color }}
                               />
 
-                              {/* TEAM */}
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-2">
-                                  <span className="font-display font-bold truncate">
+                                  <span className="font-display font-bold truncate text-sm">
                                     {entry.name}
                                   </span>
-
                                   {isMe && (
-                                    <span className="text-[10px] font-black tracking-wider text-gameyellow bg-gameyellow/10 px-1.5 py-0.5 rounded-md shrink-0">
+                                    <span className="text-[9px] font-black tracking-wider text-gameyellow bg-gameyellow/10 border border-gameyellow/20 px-1.5 py-0.5 rounded-md shrink-0">
                                       YOU
                                     </span>
                                   )}
                                 </div>
 
                                 <div className="flex items-center gap-1.5 mt-0.5">
-                                  <CheckCircle2
-                                    size={12}
-                                    className="text-gamegreen"
-                                  />
-
-                                  <span className="text-xs text-white/45">
-                                    {entry.correct}/
-                                    {game.total_questions} correct
+                                  <CheckCircle2 size={12} className="text-gamegreen" />
+                                  <span className="text-[11px] text-white/40">
+                                    {entry.correct}/{game.total_questions} correct
                                   </span>
                                 </div>
                               </div>
 
-                              {/* SCORE */}
                               <div className="text-right shrink-0">
-                                <p className="font-display font-black text-lg text-gameyellow">
+                                <p className="font-display font-black text-base md:text-lg text-gameyellow">
                                   {entry.score}
                                 </p>
-
-                                <p className="text-[10px] uppercase tracking-wider text-white/35 font-bold">
+                                <p className="text-[8px] uppercase tracking-wider text-white/30 font-bold">
                                   points
                                 </p>
                               </div>
@@ -969,42 +928,59 @@ export default function TeamPlayPage() {
                         })}
                       </div>
                     </div>
-                  )}
+                  </motion.div>
                 </>
               ) : (
-                <div className="glass rounded-2xl px-6 py-8">
-                  <div className="flex justify-center mb-3">
-                    <Trophy
-                      size={30}
-                      className="text-gameyellow animate-pulse"
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.92 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="relative mx-auto w-[280px] md:w-[320px] rounded-3xl border border-gameyellow/20 bg-black/45 backdrop-blur-2xl px-6 py-7 shadow-2xl"
+                >
+                  <motion.div
+                    animate={{ scale: [1, 1.08, 1], rotate: [0, 4, -4, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.8 }}
+                    className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gameyellow/10 border border-gameyellow/20"
+                  >
+                    <Trophy size={26} className="text-gameyellow" />
+                  </motion.div>
+
+                  <p className="font-display font-black text-sm uppercase tracking-[0.16em] text-white">
+                    Calculating Scores
+                  </p>
+                  <p className="mt-1 text-xs text-white/40">
+                    Checking answers and finalising positions...
+                  </p>
+
+                  <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/10">
+                    <motion.div
+                      className="h-full rounded-full bg-gameyellow"
+                      initial={{ width: "0%" }}
+                      animate={{ width: "100%" }}
+                      transition={{ duration: 1.8, ease: "easeInOut" }}
                     />
                   </div>
 
-                  <p className="font-display animate-pulse text-white/70">
-                    Tallying scores…
-                  </p>
-                </div>
+                  <div className="mt-3 flex items-center justify-center gap-2 text-[9px] uppercase tracking-[0.16em] text-white/25 font-bold">
+                    <span>Answers</span>
+                    <span>•</span>
+                    <span>Speed Bonus</span>
+                    <span>•</span>
+                    <span>Rankings</span>
+                  </div>
+                </motion.div>
               )}
 
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1 }}
-                className="flex items-center justify-center gap-2 mt-7"
+                className="flex items-center justify-center gap-2 mt-6"
               >
-                <Sparkles
-                  size={15}
-                  className="text-gameyellow"
-                />
-
-                <p className="font-display font-bold text-gameyellow text-sm">
+                <Sparkles size={13} className="text-gameyellow" />
+                <p className="font-display font-bold text-gameyellow text-xs md:text-sm">
                   Know the signs. Speak up. Stand together.
                 </p>
-
-                <Sparkles
-                  size={15}
-                  className="text-gameyellow"
-                />
+                <Sparkles size={13} className="text-gameyellow" />
               </motion.div>
             </motion.div>
           )}

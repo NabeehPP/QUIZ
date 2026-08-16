@@ -837,101 +837,92 @@ export default function HostProjectorPage() {
               </motion.section>
             )}
 
-          {/* ==================================================
+  {/* ==================================================
               FINAL LEADERBOARD
               ================================================== */}
 
           {game.phase === "leaderboard" && (
             <motion.section
               key="leaderboard"
-              initial={{
-                opacity: 0,
-                y: 20,
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-              }}
-              className="flex-1 flex flex-col items-center justify-center text-center w-full"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex-1 flex flex-col items-center justify-center text-center w-full px-3 md:px-6 py-4"
             >
-              {/* HEADER */}
-              <motion.div
-                initial={{
-                  opacity: 0,
-                  scale: 0.8,
-                }}
-                animate={{
-                  opacity: 1,
-                  scale: 1,
-                }}
-                transition={{
-                  type: "spring",
-                  stiffness: 160,
-                  damping: 12,
-                }}
-                className="mb-7"
-              >
-                <motion.div
-                  animate={{
-                    y: [0, -6, 0],
-                    rotate: [0, 2, -2, 0],
-                  }}
-                  transition={{
-                    repeat: Infinity,
-                    duration: 3,
-                  }}
-                  className="relative flex justify-center mb-4"
-                >
-                  <div className="absolute w-24 h-24 rounded-full bg-gameyellow/20 blur-3xl" />
-
-                  <div className="relative w-20 h-20 rounded-3xl glass border border-gameyellow/30 flex items-center justify-center">
-                    <Trophy
-                      size={44}
-                      strokeWidth={2}
-                      className="text-gameyellow"
-                    />
-                  </div>
-                </motion.div>
-
-                <div className="flex items-center justify-center gap-3">
-                  <Sparkles
-                    size={20}
-                    className="text-gameyellow"
-                  />
-
-                  <h2 className="text-shimmer animate-shimmer font-display font-black text-4xl md:text-6xl bg-clip-text text-transparent">
-                    FINAL RESULTS
-                  </h2>
-
-                  <Sparkles
-                    size={20}
-                    className="text-gameyellow"
-                  />
-                </div>
-
-                {leaderboard && (
-                  <p className="mt-2 text-white/55 font-display text-sm md:text-base">
-                    {leaderboard.length}{" "}
-                    {leaderboard.length === 1
-                      ? "team"
-                      : "teams"}{" "}
-                    competed
-                  </p>
-                )}
-              </motion.div>
-
               {leaderboard ? (
                 <>
-                  {/* TOP 3 */}
+                  {/* HEADER */}
+                  <motion.div
+                    initial={{ opacity: 0, y: -12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.45 }}
+                    className="mb-5 md:mb-7"
+                  >
+                    <motion.div
+                      animate={{
+                        y: [0, -5, 0],
+                        rotate: [0, 2, -2, 0],
+                      }}
+                      transition={{
+                        repeat: Infinity,
+                        duration: 3,
+                      }}
+                      className="relative flex justify-center mb-3 md:mb-4"
+                    >
+                      <div className="absolute w-24 h-24 rounded-full bg-gameyellow/20 blur-3xl" />
+
+                      <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-3xl glass border border-gameyellow/30 flex items-center justify-center shadow-2xl">
+                        <Trophy
+                          size={36}
+                          className="md:hidden text-gameyellow"
+                          strokeWidth={2}
+                        />
+                        <Trophy
+                          size={44}
+                          className="hidden md:block text-gameyellow"
+                          strokeWidth={2}
+                        />
+                      </div>
+                    </motion.div>
+
+                    <div className="flex items-center justify-center gap-2 md:gap-3">
+                      <Sparkles
+                        size={17}
+                        className="text-gameyellow"
+                      />
+
+                      <h2 className="text-shimmer animate-shimmer font-display font-black text-3xl sm:text-4xl md:text-6xl bg-clip-text text-transparent">
+                        FINAL RESULTS
+                      </h2>
+
+                      <Sparkles
+                        size={17}
+                        className="text-gameyellow"
+                      />
+                    </div>
+
+                    <p className="mt-2 text-gameyellow/70 font-display font-bold text-[10px] md:text-xs uppercase tracking-[0.22em]">
+                      TOTAL WINNERS
+                    </p>
+
+                    <p className="mt-1 text-white/45 font-display text-xs md:text-sm">
+                      {leaderboard.length}{" "}
+                      {leaderboard.length === 1 ? "team" : "teams"} competed
+                    </p>
+                  </motion.div>
+
+                  {/* TOP 3 PODIUM */}
                   {leaderboard.length > 0 && (
-                    <div className="w-full max-w-5xl mb-8">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:items-end">
+                    <motion.div
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.15 }}
+                      className="w-full max-w-5xl mb-5 md:mb-8"
+                    >
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 md:items-end">
                         {/* SECOND */}
                         {leaderboard[1] && (
                           <HostPodiumCard
-                            entry={
-                              leaderboard[1]
-                            }
+                            entry={leaderboard[1]}
                             place={2}
                             delay={0.35}
                           />
@@ -940,9 +931,7 @@ export default function HostProjectorPage() {
                         {/* FIRST */}
                         {leaderboard[0] && (
                           <HostPodiumCard
-                            entry={
-                              leaderboard[0]
-                            }
+                            entry={leaderboard[0]}
                             place={1}
                             winner
                             delay={0.2}
@@ -952,80 +941,80 @@ export default function HostProjectorPage() {
                         {/* THIRD */}
                         {leaderboard[2] && (
                           <HostPodiumCard
-                            entry={
-                              leaderboard[2]
-                            }
+                            entry={leaderboard[2]}
                             place={3}
                             delay={0.5}
                           />
                         )}
                       </div>
-                    </div>
+                    </motion.div>
                   )}
 
                   {/* COMPLETE RANKINGS */}
-                  <div className="w-full max-w-4xl">
+                  <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.45 }}
+                    className="w-full max-w-4xl"
+                  >
                     <div className="flex items-center justify-center gap-2 mb-3">
                       <Award
-                        size={17}
-                        className="text-white/50"
+                        size={16}
+                        className="text-white/45"
                       />
 
-                      <p className="font-display font-bold text-xs md:text-sm text-white/50 uppercase tracking-[0.18em]">
+                      <p className="font-display font-bold text-[10px] md:text-xs text-white/45 uppercase tracking-[0.2em]">
                         Complete Rankings
                       </p>
 
                       <Award
-                        size={17}
-                        className="text-white/50"
+                        size={16}
+                        className="text-white/45"
                       />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 max-h-[35vh] overflow-y-auto pr-1">
-                      {leaderboard.map(
-                        (t, i) => (
+                    <div className="rounded-2xl border border-white/8 bg-black/15 backdrop-blur-sm p-2 md:p-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-[30vh] md:max-h-[34vh] overflow-y-auto pr-1">
+                        {leaderboard.map((t, i) => (
                           <motion.div
                             key={t.teamId}
                             initial={{
                               opacity: 0,
-                              x:
-                                i % 2 === 0
-                                  ? -20
-                                  : 20,
+                              x: i % 2 === 0 ? -16 : 16,
                             }}
                             animate={{
                               opacity: 1,
                               x: 0,
                             }}
                             transition={{
-                              delay:
-                                0.65 +
-                                i * 0.06,
+                              delay: 0.6 + i * 0.055,
                             }}
-                            className={`relative overflow-hidden flex items-center gap-3 rounded-2xl px-4 py-3 border ${
-                              i < 3
+                            className={`group relative overflow-hidden flex items-center gap-3 rounded-xl px-3 py-2.5 md:px-4 md:py-3 border transition-all ${
+                              i === 0
+                                ? "bg-gameyellow/10 border-gameyellow/30 shadow-lg shadow-gameyellow/5"
+                                : i === 1
+                                ? "bg-white/7 border-white/15"
+                                : i === 2
                                 ? "bg-white/5 border-white/10"
                                 : "glass border-white/5"
                             }`}
                           >
                             {/* RANK */}
-                            <div className="w-9 shrink-0 text-center">
+                            <div className="w-8 shrink-0 text-center">
                               {i === 0 ? (
                                 <Crown
-                                  size={19}
+                                  size={18}
                                   className="mx-auto text-gameyellow"
                                 />
-                              ) : i ===
-                                1 ? (
+                              ) : i === 1 ? (
                                 <Medal
-                                  size={19}
+                                  size={18}
                                   className="mx-auto text-white/80"
                                 />
-                              ) : i ===
-                                2 ? (
+                              ) : i === 2 ? (
                                 <Medal
-                                  size={19}
-                                  className="mx-auto text-white/60"
+                                  size={18}
+                                  className="mx-auto text-white/55"
                                 />
                               ) : (
                                 <span className="font-display font-black text-white/45">
@@ -1036,100 +1025,139 @@ export default function HostProjectorPage() {
 
                             {/* TEAM COLOR */}
                             <span
-                              className="w-3 h-3 rounded-full shrink-0"
+                              className="w-2.5 h-2.5 rounded-full shrink-0 shadow-lg"
                               style={{
-                                backgroundColor:
-                                  t.color,
+                                backgroundColor: t.color,
                               }}
                             />
 
                             {/* TEAM NAME */}
-                            <span className="font-display font-bold flex-1 text-left truncate">
+                            <span className="font-display font-bold flex-1 text-left truncate text-sm md:text-base">
                               {t.name}
                             </span>
 
-                            {/* CORRECT */}
-                            <span className="hidden sm:flex items-center gap-1.5 text-white/45 text-xs shrink-0">
+                            {/* CORRECT ANSWERS */}
+                            <span className="hidden sm:flex items-center gap-1.5 text-white/40 text-[11px] shrink-0">
                               <CheckCircle2
                                 size={13}
                                 className="text-gamegreen"
                               />
-
-                              {t.correct}/
-                              {game.total_questions}
+                              {t.correct}/{game.total_questions}
                             </span>
 
                             {/* SCORE */}
-                            <span className="font-display font-black text-gameyellow min-w-[60px] text-right">
-                              {t.score}
-                            </span>
+                            <div className="text-right shrink-0 min-w-[58px]">
+                              <span className="font-display font-black text-gameyellow text-sm md:text-base">
+                                {t.score}
+                              </span>
+                              <span className="block text-[8px] uppercase tracking-wider text-white/25 font-bold">
+                                points
+                              </span>
+                            </div>
                           </motion.div>
-                        )
-                      )}
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  </motion.div>
 
                   {/* PLAY AGAIN */}
                   <motion.button
                     onClick={playAgain}
                     disabled={busy}
                     whileHover={{
-                      scale: busy
-                        ? 1
-                        : 1.04,
+                      scale: busy ? 1 : 1.04,
                     }}
                     whileTap={{
                       scale: 0.96,
                     }}
-                    className="card-pop mt-7 font-display font-extrabold px-8 py-4 rounded-2xl bg-gamegreen text-ink shadow-pop disabled:opacity-50 flex items-center gap-2"
+                    className="card-pop mt-5 md:mt-7 font-display font-extrabold px-7 md:px-8 py-3.5 md:py-4 rounded-2xl bg-gamegreen text-ink shadow-pop disabled:opacity-50 flex items-center gap-2"
                   >
-                    <span className="text-lg">
-                      ↻
-                    </span>
-
+                    <span className="text-lg">↻</span>
                     PLAY AGAIN
                   </motion.button>
 
                   {/* FOOTER */}
                   <motion.div
-                    initial={{
-                      opacity: 0,
-                    }}
-                    animate={{
-                      opacity: 1,
-                    }}
-                    transition={{
-                      delay: 1.2,
-                    }}
-                    className="flex items-center justify-center gap-2 mt-6"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.1 }}
+                    className="flex items-center justify-center gap-2 mt-5 md:mt-6"
                   >
                     <Sparkles
-                      size={15}
+                      size={13}
                       className="text-gameyellow"
                     />
 
-                    <p className="font-display font-bold text-sm md:text-base text-gameyellow">
-                      Know the signs. Speak up.
-                      Stand together.
+                    <p className="font-display font-bold text-xs md:text-sm text-gameyellow">
+                      Know the signs. Speak up. Stand together.
                     </p>
 
                     <Sparkles
-                      size={15}
+                      size={13}
                       className="text-gameyellow"
                     />
                   </motion.div>
                 </>
               ) : (
-                <div className="glass rounded-2xl px-8 py-7">
-                  <Trophy
-                    size={32}
-                    className="mx-auto mb-3 text-gameyellow animate-pulse"
-                  />
+                /* SCORE CALCULATION POPUP */
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.96 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 180,
+                      damping: 18,
+                    }}
+                    className="relative w-[280px] md:w-[320px] rounded-3xl border border-gameyellow/20 bg-black/45 backdrop-blur-2xl px-6 py-7 shadow-2xl"
+                  >
+                    <motion.div
+                      animate={{
+                        scale: [1, 1.08, 1],
+                        rotate: [0, 4, -4, 0],
+                      }}
+                      transition={{
+                        repeat: Infinity,
+                        duration: 1.8,
+                      }}
+                      className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gameyellow/10 border border-gameyellow/20"
+                    >
+                      <Trophy
+                        size={26}
+                        className="text-gameyellow"
+                      />
+                    </motion.div>
 
-                  <p className="font-display animate-pulse text-white/70">
-                    Tallying scores…
-                  </p>
-                </div>
+                    <p className="font-display font-black text-sm uppercase tracking-[0.16em] text-white">
+                      Calculating Scores
+                    </p>
+
+                    <p className="mt-1 text-xs text-white/40">
+                      Checking answers and finalising positions...
+                    </p>
+
+                    <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/10">
+                      <motion.div
+                        className="h-full rounded-full bg-gameyellow"
+                        initial={{ width: "0%" }}
+                        animate={{ width: "100%" }}
+                        transition={{
+                          duration: 1.8,
+                          ease: "easeInOut",
+                        }}
+                      />
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-center gap-2 text-[9px] uppercase tracking-[0.18em] text-white/25 font-bold">
+                      <span>Answers</span>
+                      <span>•</span>
+                      <span>Speed Bonus</span>
+                      <span>•</span>
+                      <span>Rankings</span>
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
               )}
             </motion.section>
           )}
