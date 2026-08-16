@@ -62,9 +62,11 @@ class SoundEngine {
 
     const AudioContextClass =
       window.AudioContext ||
-      (window as typeof window & {
-        webkitAudioContext?: typeof AudioContext;
-      }).webkitAudioContext;
+      (
+        window as typeof window & {
+          webkitAudioContext?: typeof AudioContext;
+        }
+      ).webkitAudioContext;
 
     if (!AudioContextClass) return;
 
@@ -123,21 +125,21 @@ class SoundEngine {
     freq: number,
     startOffset: number,
     duration: number,
-   opts: {
-  type?: OscType;
-  gain?: number;
-  sweepTo?: number;
-  destination?: GainNode;
-} = {}
+    opts: {
+      type?: OscType;
+      gain?: number;
+      sweepTo?: number;
+      destination?: GainNode;
+    } = {}
   ) {
     if (!this.ctx || !this.master) return;
 
- const {
-  type = "sine",
-  gain = 0.2,
-  sweepTo,
-  destination = this.master,
-} = opts;
+    const {
+      type = "sine",
+      gain = 0.2,
+      sweepTo,
+      destination = this.master,
+    } = opts;
 
     const ctx = this.ctx;
 
@@ -265,9 +267,9 @@ class SoundEngine {
     source.stop(startTime + duration + 0.03);
   }
 
-  // ====
+  // ============================================================
   // BACKGROUND MUSIC
-  // ====
+  // ============================================================
 
   /**
    * Start the real quiz background track.
@@ -288,20 +290,29 @@ class SoundEngine {
     }
 
     if (!this.musicAudio) {
-      this.musicAudio = new Audio("/audio/quiz-master.mp3");
+      this.musicAudio = new Audio(
+        "/audio/quiz-master.mp3"
+      );
+
       this.musicAudio.loop = true;
       this.musicAudio.preload = "auto";
 
-      this.musicSource = this.ctx.createMediaElementSource(
-        this.musicAudio
-      );
+      this.musicSource =
+        this.ctx.createMediaElementSource(
+          this.musicAudio
+        );
 
-      this.musicSource.connect(this.musicGain);
+      this.musicSource.connect(
+        this.musicGain
+      );
     }
 
     const now = this.ctx.currentTime;
 
-    this.musicGain.gain.cancelScheduledValues(now);
+    this.musicGain.gain.cancelScheduledValues(
+      now
+    );
+
     this.musicGain.gain.setTargetAtTime(
       0.025,
       now,
@@ -320,7 +331,10 @@ class SoundEngine {
    */
   stopMusic() {
     if (this.musicResumeTimer !== null) {
-      window.clearTimeout(this.musicResumeTimer);
+      window.clearTimeout(
+        this.musicResumeTimer
+      );
+
       this.musicResumeTimer = null;
     }
 
@@ -332,7 +346,10 @@ class SoundEngine {
     if (this.ctx && this.musicGain) {
       const now = this.ctx.currentTime;
 
-      this.musicGain.gain.cancelScheduledValues(now);
+      this.musicGain.gain.cancelScheduledValues(
+        now
+      );
+
       this.musicGain.gain.setTargetAtTime(
         0,
         now,
@@ -357,7 +374,10 @@ class SoundEngine {
 
     const now = this.ctx.currentTime;
 
-    this.musicGain.gain.cancelScheduledValues(now);
+    this.musicGain.gain.cancelScheduledValues(
+      now
+    );
+
     this.musicGain.gain.setTargetAtTime(
       0.004,
       now,
@@ -365,39 +385,39 @@ class SoundEngine {
     );
 
     if (this.musicResumeTimer !== null) {
-      window.clearTimeout(this.musicResumeTimer);
+      window.clearTimeout(
+        this.musicResumeTimer
+      );
     }
 
-    this.musicResumeTimer = window.setTimeout(() => {
-      if (
-        this.ctx &&
-        this.musicGain &&
-        this.musicPlaying
-      ) {
-        const currentTime = this.ctx.currentTime;
+    this.musicResumeTimer =
+      window.setTimeout(() => {
+        if (
+          this.ctx &&
+          this.musicGain &&
+          this.musicPlaying
+        ) {
+          const currentTime =
+            this.ctx.currentTime;
 
-        this.musicGain.gain.cancelScheduledValues(
-          currentTime
-        );
+          this.musicGain.gain.cancelScheduledValues(
+            currentTime
+          );
 
-        this.musicGain.gain.setTargetAtTime(
-<<<<<<< HEAD
-          0.025,
-=======
-          0.012,
->>>>>>> 1352a3da3a49d0fbd6e15cb7e7c93cae33e1e8fc
-          currentTime,
-          0.12
-        );
-      }
+          this.musicGain.gain.setTargetAtTime(
+            0.012,
+            currentTime,
+            0.12
+          );
+        }
 
-      this.musicResumeTimer = null;
-    }, 650);
+        this.musicResumeTimer = null;
+      }, 650);
   }
 
-  // ====
+  // ============================================================
   // UI SOUNDS
-  // ====
+  // ============================================================
 
   /**
    * Small bright button click.
@@ -431,24 +451,42 @@ class SoundEngine {
 
     this.duckMusic();
 
-    const notes = [392, 523.25, 659.25, 783.99, 1046.5];
+    const notes = [
+      392,
+      523.25,
+      659.25,
+      783.99,
+      1046.5,
+    ];
 
     notes.forEach((frequency, index) => {
       this.tone(
         frequency,
         index * 0.10,
-        index === notes.length - 1 ? 0.35 : 0.12,
+        index === notes.length - 1
+          ? 0.35
+          : 0.12,
         {
-          type: index === notes.length - 1 ? "sine" : "triangle",
-          gain: index === notes.length - 1 ? 0.27 : 0.20,
+          type:
+            index === notes.length - 1
+              ? "sine"
+              : "triangle",
+          gain:
+            index === notes.length - 1
+              ? 0.27
+              : 0.20,
         }
       );
     });
 
-    this.noiseBurst(0.42, 0.35, {
-      gain: 0.045,
-      lowpass: 4200,
-    });
+    this.noiseBurst(
+      0.42,
+      0.35,
+      {
+        gain: 0.045,
+        lowpass: 4200,
+      }
+    );
   }
 
   /**
@@ -493,26 +531,45 @@ class SoundEngine {
 
     this.duckMusic();
 
-    this.tone(392, 0, 0.12, {
-      type: "triangle",
-      gain: 0.16,
-      sweepTo: 523.25,
-    });
+    this.tone(
+      392,
+      0,
+      0.12,
+      {
+        type: "triangle",
+        gain: 0.16,
+        sweepTo: 523.25,
+      }
+    );
 
-    this.tone(659.25, 0.08, 0.13, {
-      type: "triangle",
-      gain: 0.19,
-    });
+    this.tone(
+      659.25,
+      0.08,
+      0.13,
+      {
+        type: "triangle",
+        gain: 0.19,
+      }
+    );
 
-    this.tone(1046.5, 0.16, 0.22, {
-      type: "sine",
-      gain: 0.17,
-    });
+    this.tone(
+      1046.5,
+      0.16,
+      0.22,
+      {
+        type: "sine",
+        gain: 0.17,
+      }
+    );
 
-    this.noiseBurst(0.14, 0.20, {
-      gain: 0.018,
-      lowpass: 4500,
-    });
+    this.noiseBurst(
+      0.14,
+      0.20,
+      {
+        gain: 0.018,
+        lowpass: 4500,
+      }
+    );
   }
 
   /**
@@ -523,21 +580,35 @@ class SoundEngine {
 
     this.duckMusic();
 
-    this.tone(880, 0, 0.075, {
-      type: "square",
-      gain: 0.16,
-      sweepTo: 1046.5,
-    });
+    this.tone(
+      880,
+      0,
+      0.075,
+      {
+        type: "square",
+        gain: 0.16,
+        sweepTo: 1046.5,
+      }
+    );
 
-    this.tone(1318.5, 0.035, 0.055, {
-      type: "sine",
-      gain: 0.09,
-    });
+    this.tone(
+      1318.5,
+      0.035,
+      0.055,
+      {
+        type: "sine",
+        gain: 0.09,
+      }
+    );
 
-    this.noiseBurst(0, 0.035, {
-      gain: 0.018,
-      lowpass: 5000,
-    });
+    this.noiseBurst(
+      0,
+      0.035,
+      {
+        gain: 0.018,
+        lowpass: 5000,
+      }
+    );
   }
 
   /**
@@ -548,21 +619,35 @@ class SoundEngine {
 
     this.duckMusic();
 
-    this.tone(1046.5, 0, 0.10, {
-      type: "triangle",
-      gain: 0.22,
-      sweepTo: 1318.5,
-    });
+    this.tone(
+      1046.5,
+      0,
+      0.10,
+      {
+        type: "triangle",
+        gain: 0.22,
+        sweepTo: 1318.5,
+      }
+    );
 
-    this.tone(1568, 0.045, 0.09, {
-      type: "sine",
-      gain: 0.12,
-    });
+    this.tone(
+      1568,
+      0.045,
+      0.09,
+      {
+        type: "sine",
+        gain: 0.12,
+      }
+    );
 
-    this.noiseBurst(0, 0.055, {
-      gain: 0.025,
-      lowpass: 6000,
-    });
+    this.noiseBurst(
+      0,
+      0.055,
+      {
+        gain: 0.025,
+        lowpass: 6000,
+      }
+    );
   }
 
   /**
@@ -578,22 +663,37 @@ class SoundEngine {
 
     this.duckMusic();
 
-    this.tone(440, 0, 0.11, {
-      type: "square",
-      gain: 0.16,
-      sweepTo: 330,
-    });
+    this.tone(
+      440,
+      0,
+      0.11,
+      {
+        type: "square",
+        gain: 0.16,
+        sweepTo: 330,
+      }
+    );
 
-    this.tone(440, 0.13, 0.11, {
-      type: "square",
-      gain: 0.18,
-      sweepTo: 330,
-    });
+    this.tone(
+      440,
+      0.13,
+      0.11,
+      {
+        type: "square",
+        gain: 0.18,
+        sweepTo: 330,
+      }
+    );
 
-    this.tone(220, 0.26, 0.14, {
-      type: "triangle",
-      gain: 0.12,
-    });
+    this.tone(
+      220,
+      0.26,
+      0.14,
+      {
+        type: "triangle",
+        gain: 0.12,
+      }
+    );
   }
 
   /**
@@ -625,8 +725,14 @@ class SoundEngine {
         index * 0.075,
         index >= 3 ? 0.28 : 0.13,
         {
-          type: index >= 3 ? "sine" : "triangle",
-          gain: index >= 3 ? 0.24 : 0.22,
+          type:
+            index >= 3
+              ? "sine"
+              : "triangle",
+          gain:
+            index >= 3
+              ? 0.24
+              : 0.22,
         }
       );
     });
