@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import SiteTrademark from "@/components/SiteTrademark";
 
 export const metadata: Metadata = {
   title: "RAGGING? GAME OVER.",
@@ -23,6 +24,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="bg-game min-h-screen text-white overflow-x-hidden">
         {children}
+        <SiteTrademark />
       </body>
     </html>
   );
