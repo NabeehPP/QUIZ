@@ -11,6 +11,7 @@ import {
   Sparkles,
   CheckCircle2,
   CircleUserRound,
+  CircleX,
 } from "lucide-react";
 
 import BackgroundShapes from "@/components/BackgroundShapes";
@@ -209,9 +210,7 @@ export default function TeamPlayPage() {
       selected === null ||
       submitted ||
       submitting
-    ) {
-      return;
-    }
+    ) return;
 
     if (game.phase !== "question") return;
 
@@ -221,9 +220,7 @@ export default function TeamPlayPage() {
     try {
       const res = await fetch(`/api/game/${code}/answer`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           teamId: team.teamId,
           questionIdx: game.current_question,
@@ -237,13 +234,11 @@ export default function TeamPlayPage() {
         throw new Error(data.error ?? "Could not submit answer.");
       }
 
-      // Store the answer only after the server accepts it.
       setMyAnswers((prev) => ({
         ...prev,
         [game.current_question]: selected,
       }));
 
-      // Lock the UI permanently for this question.
       setSubmitted(true);
     } catch (error) {
       console.error("Answer submission failed:", error);
@@ -448,27 +443,10 @@ export default function TeamPlayPage() {
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="mb-4 font-display font-bold text-sm flex items-center gap-2"
+                    className="mb-4 font-display font-bold text-gamegreen text-sm flex items-center gap-2"
                   >
-                    <CheckCircle2
-                      size={17}
-                      className={
-                        submitted
-                          ? "text-gamegreen"
-                          : "text-white/60"
-                      }
-                    />
-                    <span
-                      className={
-                        submitted
-                          ? "text-gamegreen"
-                          : "text-white/60"
-                      }
-                    >
-                      {submitted
-                        ? "Answer locked"
-                        : "Answer selected"}
-                    </span>
+                    <CheckCircle2 size={17} />
+                    {submitted ? "Answer locked" : "Answer selected"}
                   </motion.div>
                 )}
 
@@ -478,18 +456,19 @@ export default function TeamPlayPage() {
                     const showResult = game.phase === "reveal";
                     const isCorrectOpt =
                       showResult && question.correctIndex === i;
-                    // IMPORTANT:
-                    // No correct/wrong animation is allowed before reveal.
-                    // This prevents a previously selected wrong option from
-                    // flashing as "wrong" when the player changes selection.
                     const isWrongSelected =
-                      showResult && isSelected && !isCorrectOpt;
+                      showResult &&
+                      isSelected &&
+                      question.correctIndex !== i;
                     const dim =
-                      showResult && !isCorrectOpt && !isSelected;
+                      showResult &&
+                      !isCorrectOpt &&
+                      !isWrongSelected;
 
                     return (
                       <motion.button
                         key={i}
+                        type="button"
                         disabled={
                           game.phase === "reveal" ||
                           submitted ||
@@ -511,14 +490,12 @@ export default function TeamPlayPage() {
                             : {}
                         }
                         animate={
-                          !showResult
-                            ? {}
-                            : isCorrectOpt
+                          isCorrectOpt
                             ? { scale: [1, 1.05, 1] }
                             : isWrongSelected
                             ? {
                                 x: [0, -6, 5, -3, 2, 0],
-                                opacity: 0.5,
+                                opacity: 0.8,
                               }
                             : dim
                             ? { opacity: 0.35 }
@@ -530,12 +507,20 @@ export default function TeamPlayPage() {
                         style={{
                           backgroundColor: OPTION_COLORS[i],
                           color: "#161235",
-                          outline: isSelected ? "4px solid white" : "none",
+                          outline: isWrongSelected
+                            ? "4px solid #ef4444"
+                            : isSelected && !showResult
+                            ? "4px solid white"
+                            : "none",
                           outlineOffset: 2,
                         }}
                       >
                         {isCorrectOpt && (
                           <span className="absolute inset-0 rounded-2xl border-4 border-gamegreen animate-pulseRing" />
+                        )}
+
+                        {isWrongSelected && (
+                          <span className="absolute inset-0 rounded-2xl border-4 border-red-500" />
                         )}
 
                         <span className="w-8 h-8 flex items-center justify-center rounded-full bg-ink text-white font-black text-sm shrink-0">
@@ -550,57 +535,53 @@ export default function TeamPlayPage() {
                           </span>
                         )}
 
-                        {showResult &&
-                          isSelected &&
-                          !isCorrectOpt && (
-                            <span className="absolute right-4 top-1/2 -translate-y-1/2 z-20 text-gamepink">
-                              <CircleUserRound
-                                size={26}
-                                strokeWidth={2.5}
-                              />
-                            </span>
-                          )}
+                        {isWrongSelected && (
+                          <span className="absolute right-4 top-1/2 -translate-y-1/2 z-20 text-red-500">
+                            <CircleX size={28} strokeWidth={2.5} />
+                          </span>
+                        )}
                       </motion.button>
                     );
                   })}
-                </div>
 
-                {game.phase === "question" && (
-                  <motion.button
-                    type="button"
-                    onClick={submitAnswer}
-                    disabled={
-                      selected === null ||
-                      submitted ||
-                      submitting
-                    }
-                    whileHover={{
-                      scale:
-                        selected !== null &&
-                        !submitted &&
-                        !submitting
-                          ? 1.03
-                          : 1,
-                    }}
-                    whileTap={{
-                      scale:
-                        selected !== null &&
-                        !submitted &&
-                        !submitting
-                          ? 0.97
-                          : 1,
-                    }}
-                    className="mt-5 w-full max-w-md py-4 rounded-2xl font-display font-extrabold text-lg bg-gamegreen text-ink shadow-pop transition-all disabled:bg-white/10 disabled:text-white/30 disabled:shadow-none disabled:cursor-not-allowed"
-                  >
-                    {submitting
-                      ? "SUBMITTING..."
-                      : submitted
-                      ? "ANSWER LOCKED"
-                      : selected === null
-                      ? "SELECT AN ANSWER"
-                      : "SUBMIT ANSWER"}
-                  </motion.button>
-                )}
+                  {game.phase === "question" && (
+                    <motion.button
+                      type="button"
+                      onClick={submitAnswer}
+                      disabled={
+                        selected === null ||
+                        submitted ||
+                        submitting
+                      }
+                      whileHover={{
+                        scale:
+                          selected !== null &&
+                          !submitted &&
+                          !submitting
+                            ? 1.03
+                            : 1,
+                      }}
+                      whileTap={{
+                        scale:
+                          selected !== null &&
+                          !submitted &&
+                          !submitting
+                            ? 0.97
+                            : 1,
+                      }}
+                      className="mt-5 w-full max-w-md mx-auto py-4 rounded-2xl font-display font-extrabold text-lg bg-gamegreen text-ink shadow-pop transition-all disabled:bg-white/10 disabled:text-white/30 disabled:shadow-none disabled:cursor-not-allowed"
+                    >
+                      {submitting
+                        ? "SUBMITTING..."
+                        : submitted
+                        ? "ANSWER LOCKED"
+                        : selected === null
+                        ? "SELECT AN ANSWER"
+                        : "SUBMIT ANSWER"}
+                    </motion.button>
+                  )}
+
+                </div>
 
                 {game.phase === "reveal" && (
                   <motion.div
