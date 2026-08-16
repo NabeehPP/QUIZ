@@ -141,17 +141,21 @@ export default function TeamPlayPage() {
     }
   }, [code, game?.current_question, game?.phase]);
 
+  // Reset the player's selection only when a NEW question starts.
+  // Never reset it when question -> reveal, because reveal needs to know
+  // which answer this team submitted.
   useEffect(() => {
     setSelected(null);
     setSubmitted(false);
     setSubmitting(false);
-    fetchQuestion();
-
-    // Reset answer selection only when the question changes.
-    // Do NOT reset it when the host changes question -> reveal,
-    // otherwise the player's submitted wrong answer disappears.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [game?.current_question]);
+
+  // Fetch question data whenever the question OR phase changes.
+  // The question endpoint can return the explanation/correct answer
+  // only during reveal, so we MUST refetch on question -> reveal.
+  useEffect(() => {
+    fetchQuestion();
+  }, [game?.current_question, game?.phase, fetchQuestion]);
 
   // Fetch leaderboard when the game reaches the leaderboard phase
   useEffect(() => {
@@ -185,7 +189,8 @@ export default function TeamPlayPage() {
     ) {
       soundedRevealRef.current = question.idx;
 
-      const mySelection = myAnswers[question.idx];
+      const mySelection =
+        myAnswers[game.current_question];
 
       if (mySelection !== undefined) {
         if (mySelection === question.correctIndex) {
@@ -195,7 +200,12 @@ export default function TeamPlayPage() {
         }
       }
     }
-  }, [game?.phase, question, myAnswers]);
+  }, [
+    game?.phase,
+    game?.current_question,
+    question,
+    myAnswers,
+  ]);
 
   function selectAnswer(idx: number) {
     if (!team || !game) return;
@@ -461,7 +471,7 @@ export default function TeamPlayPage() {
                     // accepted by the server. During the question phase,
                     // use the currently selected option.
                     const answerForDisplay = showResult
-                      ? myAnswers[question.idx] ?? selected
+                      ? myAnswers[game.current_question] ?? selected
                       : selected;
 
                     const isSelected =
