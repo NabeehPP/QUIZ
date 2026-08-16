@@ -41,6 +41,8 @@ export default function TeamPlayPage() {
 
   const [question, setQuestion] = useState<RevealQuestion | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [myAnswers, setMyAnswers] = useState<Record<number, number>>({});
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[] | null>(
     null
@@ -139,7 +141,9 @@ export default function TeamPlayPage() {
   }, [code, game?.current_question, game?.phase]);
 
   useEffect(() => {
-    setSelected(myAnswers[game?.current_question ?? -1] ?? null);
+    setSelected(null);
+    setSubmitted(false);
+    setSubmitting(false);
     fetchQuestion();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -189,20 +193,33 @@ export default function TeamPlayPage() {
     }
   }, [game?.phase, question, myAnswers]);
 
-  async function selectAnswer(idx: number) {
-    if (!team || !game || game.phase !== "question") return;
+  function selectAnswer(idx: number) {
+    if (!team || !game) return;
+    if (game.phase !== "question") return;
+    if (submitted || submitting) return;
 
     soundEngine.click();
-
     setSelected(idx);
+  }
 
-    setMyAnswers((prev) => ({
-      ...prev,
-      [game.current_question]: idx,
-    }));
+  async function submitAnswer() {
+    if (
+      !team ||
+      !game ||
+      selected === null ||
+      submitted ||
+      submitting
+    ) {
+      return;
+    }
+
+    if (game.phase !== "question") return;
+
+    soundEngine.click();
+    setSubmitting(true);
 
     try {
-      await fetch(`/api/game/${code}/answer`, {
+      const res = await fetch(`/api/game/${code}/answer`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -210,11 +227,28 @@ export default function TeamPlayPage() {
         body: JSON.stringify({
           teamId: team.teamId,
           questionIdx: game.current_question,
-          selectedIndex: idx,
+          selectedIndex: selected,
         }),
       });
-    } catch {
-      /* server handles final scoring */
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(data.error ?? "Could not submit answer.");
+      }
+
+      // Store the answer only after the server accepts it.
+      setMyAnswers((prev) => ({
+        ...prev,
+        [game.current_question]: selected,
+      }));
+
+      // Lock the UI permanently for this question.
+      setSubmitted(true);
+    } catch (error) {
+      console.error("Answer submission failed:", error);
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -414,10 +448,27 @@ export default function TeamPlayPage() {
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="mb-4 font-display font-bold text-gamegreen text-sm flex items-center gap-2"
+                    className="mb-4 font-display font-bold text-sm flex items-center gap-2"
                   >
-                    <CheckCircle2 size={17} />
-                    Answer selected
+                    <CheckCircle2
+                      size={17}
+                      className={
+                        submitted
+                          ? "text-gamegreen"
+                          : "text-white/60"
+                      }
+                    />
+                    <span
+                      className={
+                        submitted
+                          ? "text-gamegreen"
+                          : "text-white/60"
+                      }
+                    >
+                      {submitted
+                        ? "Answer locked"
+                        : "Answer selected"}
+                    </span>
                   </motion.div>
                 )}
 
@@ -427,6 +478,10 @@ export default function TeamPlayPage() {
                     const showResult = game.phase === "reveal";
                     const isCorrectOpt =
                       showResult && question.correctIndex === i;
+                    // IMPORTANT:
+                    // No correct/wrong animation is allowed before reveal.
+                    // This prevents a previously selected wrong option from
+                    // flashing as "wrong" when the player changes selection.
                     const isWrongSelected =
                       showResult && isSelected && !isCorrectOpt;
                     const dim =
@@ -435,16 +490,30 @@ export default function TeamPlayPage() {
                     return (
                       <motion.button
                         key={i}
-                        disabled={game.phase === "reveal"}
+                        disabled={
+                          game.phase === "reveal" ||
+                          submitted ||
+                          submitting
+                        }
                         onClick={() => selectAnswer(i)}
                         whileHover={
-                          game.phase === "question"
+                          game.phase === "question" &&
+                          !submitted &&
+                          !submitting
                             ? { scale: 1.02 }
                             : {}
                         }
-                        whileTap={{ scale: 0.96 }}
+                        whileTap={
+                          game.phase === "question" &&
+                          !submitted &&
+                          !submitting
+                            ? { scale: 0.96 }
+                            : {}
+                        }
                         animate={
-                          isCorrectOpt
+                          !showResult
+                            ? {}
+                            : isCorrectOpt
                             ? { scale: [1, 1.05, 1] }
                             : isWrongSelected
                             ? {
@@ -495,6 +564,43 @@ export default function TeamPlayPage() {
                     );
                   })}
                 </div>
+
+                {game.phase === "question" && (
+                  <motion.button
+                    type="button"
+                    onClick={submitAnswer}
+                    disabled={
+                      selected === null ||
+                      submitted ||
+                      submitting
+                    }
+                    whileHover={{
+                      scale:
+                        selected !== null &&
+                        !submitted &&
+                        !submitting
+                          ? 1.03
+                          : 1,
+                    }}
+                    whileTap={{
+                      scale:
+                        selected !== null &&
+                        !submitted &&
+                        !submitting
+                          ? 0.97
+                          : 1,
+                    }}
+                    className="mt-5 w-full max-w-md py-4 rounded-2xl font-display font-extrabold text-lg bg-gamegreen text-ink shadow-pop transition-all disabled:bg-white/10 disabled:text-white/30 disabled:shadow-none disabled:cursor-not-allowed"
+                  >
+                    {submitting
+                      ? "SUBMITTING..."
+                      : submitted
+                      ? "ANSWER LOCKED"
+                      : selected === null
+                      ? "SELECT AN ANSWER"
+                      : "SUBMIT ANSWER"}
+                  </motion.button>
+                )}
 
                 {game.phase === "reveal" && (
                   <motion.div
