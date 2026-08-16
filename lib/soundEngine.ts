@@ -313,12 +313,12 @@ class SoundEngine {
       now
     );
 
-   this.musicGain.gain.setTargetAtTime(
-   0.035,
-   now,
-   0.04
-   );
-
+ // Normal background music
+this.musicGain.gain.setTargetAtTime(
+  0.045,
+  now,
+  0.04
+);
     this.musicPlaying = true;
 
     this.musicAudio.play().catch(() => {
@@ -404,11 +404,12 @@ class SoundEngine {
             currentTime
           );
 
-     this.musicGain.gain.setTargetAtTime(
-     0.017,
-     currentTime,
-     0.12
-    );
+// Background music after sound effect
+this.musicGain.gain.setTargetAtTime(
+  0.022,
+  currentTime,
+  0.12
+);
         }
 
         this.musicResumeTimer = null;
