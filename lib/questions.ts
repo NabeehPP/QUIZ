@@ -242,51 +242,6 @@ export const QUESTIONS: FullQuestion[] = [
       "Physical injury is not a necessary condition for ragging. Humiliation, intimidation, psychological harm, or forcing a student to perform unwanted acts can fall within the anti-ragging framework.",
   },
 
-  // ============================================================
-  // GENERAL KNOWLEDGE
-  // ============================================================
-
-  {
-    question:
-      "The Constitution of India was adopted by the Constituent Assembly on:",
-    options: [
-      "15 August 1947",
-      "26 November 1949",
-      "26 January 1950",
-      "2 October 1950",
-    ],
-    correctIndex: 1,
-    explanation:
-      "The Constitution of India was adopted by the Constituent Assembly on November 26, 1949. It came into force on January 26, 1950.",
-  },
-
-  {
-    question:
-      "Which Indian space mission achieved a successful soft landing near the Moon's south polar region in August 2023?",
-    options: [
-      "Chandrayaan-1",
-      "Mangalyaan",
-      "Chandrayaan-2",
-      "Chandrayaan-3",
-    ],
-    correctIndex: 3,
-    explanation:
-      "Chandrayaan-3 successfully achieved a soft landing on the Moon on August 23, 2023, making India the first country to land near the lunar south polar region.",
-  },
-
-  {
-    question:
-      "Which fundamental right is primarily associated with equality before the law and equal protection of the laws in India?",
-    options: [
-      "Article 14",
-      "Article 19",
-      "Article 21",
-      "Article 32",
-    ],
-    correctIndex: 0,
-    explanation:
-      "Article 14 of the Constitution guarantees equality before the law and equal protection of the laws within the territory of India.",
-  },
 ];
 
 if (QUESTIONS.length !== 15) {
