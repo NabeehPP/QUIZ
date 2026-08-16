@@ -147,8 +147,11 @@ export default function TeamPlayPage() {
     setSubmitting(false);
     fetchQuestion();
 
+    // Reset answer selection only when the question changes.
+    // Do NOT reset it when the host changes question -> reveal,
+    // otherwise the player's submitted wrong answer disappears.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [game?.current_question, game?.phase]);
+  }, [game?.current_question]);
 
   // Fetch leaderboard when the game reaches the leaderboard phase
   useEffect(() => {
@@ -452,14 +455,27 @@ export default function TeamPlayPage() {
 
                 <div className="grid grid-cols-1 gap-3 w-full">
                   {question.options.map((opt, i) => {
-                    const isSelected = selected === i;
                     const showResult = game.phase === "reveal";
+
+                    // During reveal, use the answer that was actually
+                    // accepted by the server. During the question phase,
+                    // use the currently selected option.
+                    const answerForDisplay = showResult
+                      ? myAnswers[question.idx] ?? selected
+                      : selected;
+
+                    const isSelected =
+                      answerForDisplay === i;
+
                     const isCorrectOpt =
-                      showResult && question.correctIndex === i;
+                      showResult &&
+                      question.correctIndex === i;
+
                     const isWrongSelected =
                       showResult &&
                       isSelected &&
                       question.correctIndex !== i;
+
                     const dim =
                       showResult &&
                       !isCorrectOpt &&
@@ -495,14 +511,16 @@ export default function TeamPlayPage() {
                             : isWrongSelected
                             ? {
                                 x: [0, -6, 5, -3, 2, 0],
-                                opacity: 0.8,
+                                opacity: 0.85,
                               }
                             : dim
                             ? { opacity: 0.35 }
                             : {}
                         }
                         className={`glow-card ${
-                          isCorrectOpt ? "is-glowing" : ""
+                          isCorrectOpt
+                            ? "is-glowing"
+                            : ""
                         } card-pop min-h-[64px] rounded-2xl px-5 py-4 flex items-center gap-3 font-display font-bold text-lg shadow-pop text-left disabled:cursor-default relative overflow-hidden`}
                         style={{
                           backgroundColor: OPTION_COLORS[i],
@@ -527,17 +545,25 @@ export default function TeamPlayPage() {
                           {OPTION_LETTERS[i]}
                         </span>
 
-                        <span className="flex-1 pr-10">{opt}</span>
+                        <span className="flex-1 pr-10">
+                          {opt}
+                        </span>
 
                         {isCorrectOpt && (
                           <span className="absolute right-4 top-1/2 -translate-y-1/2 z-20 text-gamegreen">
-                            <CheckCircle2 size={28} strokeWidth={2.5} />
+                            <CheckCircle2
+                              size={28}
+                              strokeWidth={2.5}
+                            />
                           </span>
                         )}
 
                         {isWrongSelected && (
                           <span className="absolute right-4 top-1/2 -translate-y-1/2 z-20 text-red-500">
-                            <CircleX size={28} strokeWidth={2.5} />
+                            <CircleX
+                              size={28}
+                              strokeWidth={2.5}
+                            />
                           </span>
                         )}
                       </motion.button>
