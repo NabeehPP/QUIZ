@@ -49,6 +49,10 @@ export default function TeamPlayPage() {
     null
   );
   const [confettiTrigger, setConfettiTrigger] = useState(0);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Prevent an older question request from overwriting newer reveal data.
+  const questionRequestRef = useRef(0);
 
   // Restore saved team from this device
   useEffect(() => {
@@ -127,35 +131,76 @@ export default function TeamPlayPage() {
     }
   }
 
-  const fetchQuestion = useCallback(async () => {
+  // ============================================================
+  // QUESTION DATA
+  // ============================================================
+
+  useEffect(() => {
     if (!code || !game || game.current_question < 0) return;
 
-    const res = await fetch(
-      `/api/game/${code}/question?idx=${game.current_question}`
-    );
+    const questionIndex = game.current_question;
+    const phase = game.phase;
+    const requestId = ++questionRequestRef.current;
+    const controller = new AbortController();
 
-    const data = await res.json();
-
-    if (res.ok) {
-      setQuestion(data);
+    // Only clear the old question when moving to a genuinely new question.
+    // During question -> reveal we keep the player's selection visible.
+    if (phase === "question") {
+      setSelected(null);
+      setSubmitted(false);
+      setSubmitting(false);
+      setSubmitError(null);
+      setQuestion((current) =>
+        current?.idx === questionIndex ? current : null
+      );
     }
+
+    async function loadQuestion() {
+      try {
+        const res = await fetch(
+          `/api/game/${code}/question?idx=${questionIndex}`,
+          {
+            cache: "no-store",
+            signal: controller.signal,
+          }
+        );
+
+        if (!res.ok) return;
+
+        const data = await res.json();
+
+        // Ignore responses belonging to an older request.
+        if (
+          controller.signal.aborted ||
+          requestId !== questionRequestRef.current
+        ) {
+          return;
+        }
+
+        // Never allow data for another question to enter this screen.
+        if (data?.idx !== undefined && data.idx !== questionIndex) {
+          return;
+        }
+
+        setQuestion(data);
+      } catch (error) {
+        if (
+          error instanceof DOMException &&
+          error.name === "AbortError"
+        ) {
+          return;
+        }
+
+        console.error("Question loading failed:", error);
+      }
+    }
+
+    loadQuestion();
+
+    return () => {
+      controller.abort();
+    };
   }, [code, game?.current_question, game?.phase]);
-
-  // Reset the player's selection only when a NEW question starts.
-  // Never reset it when question -> reveal, because reveal needs to know
-  // which answer this team submitted.
-  useEffect(() => {
-    setSelected(null);
-    setSubmitted(false);
-    setSubmitting(false);
-  }, [game?.current_question]);
-
-  // Fetch question data whenever the question OR phase changes.
-  // The question endpoint can return the explanation/correct answer
-  // only during reveal, so we MUST refetch on question -> reveal.
-  useEffect(() => {
-    fetchQuestion();
-  }, [game?.current_question, game?.phase, fetchQuestion]);
 
   // Fetch leaderboard when the game reaches the leaderboard phase
   useEffect(() => {
@@ -177,31 +222,37 @@ export default function TeamPlayPage() {
     }
   }, [game?.phase, code]);
 
-  // Personal correct/incorrect feedback once the host reveals the answer
+  // Personal correct/incorrect feedback only after reveal data is ready.
+  // This prevents the temporary wrong result caused by stale question data.
   const soundedRevealRef = useRef<number | null>(null);
 
+  const revealDataReady =
+    game?.phase === "reveal" &&
+    !!question &&
+    question.idx === game.current_question &&
+    typeof question.correctIndex === "number" &&
+    typeof question.explanation === "string";
+
   useEffect(() => {
-    if (
-      game?.phase === "reveal" &&
-      question &&
-      question.correctIndex !== undefined &&
-      soundedRevealRef.current !== question.idx
-    ) {
-      soundedRevealRef.current = question.idx;
+    if (!revealDataReady || !game || !question) return;
 
-      const mySelection =
-        myAnswers[game.current_question];
+    const questionIndex = game.current_question;
 
-      if (mySelection !== undefined) {
-        if (mySelection === question.correctIndex) {
-          soundEngine.correct();
-        } else {
-          soundEngine.incorrect();
-        }
-      }
+    if (soundedRevealRef.current === questionIndex) return;
+
+    soundedRevealRef.current = questionIndex;
+
+    const mySelection = myAnswers[questionIndex];
+
+    if (mySelection === undefined) return;
+
+    if (mySelection === question.correctIndex) {
+      soundEngine.correct();
+    } else {
+      soundEngine.incorrect();
     }
   }, [
-    game?.phase,
+    revealDataReady,
     game?.current_question,
     question,
     myAnswers,
@@ -223,12 +274,30 @@ export default function TeamPlayPage() {
       selected === null ||
       submitted ||
       submitting
-    ) return;
+    ) {
+      return;
+    }
 
     if (game.phase !== "question") return;
 
+    const questionIndex = game.current_question;
+    const selectedIndex = selected;
+
     soundEngine.click();
+
+    // Lock locally immediately. The server still remains authoritative for
+    // scoring and bonus time, so network latency cannot make the UI appear
+    // unlocked after the player has already submitted.
+    setSubmitError(null);
     setSubmitting(true);
+    setSubmitted(true);
+
+    // Keep the exact submitted choice locally so reveal feedback is available
+    // even if the server response arrives after the host reveals the answer.
+    setMyAnswers((prev) => ({
+      ...prev,
+      [questionIndex]: selectedIndex,
+    }));
 
     try {
       const res = await fetch(`/api/game/${code}/answer`, {
@@ -236,9 +305,10 @@ export default function TeamPlayPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           teamId: team.teamId,
-          questionIdx: game.current_question,
-          selectedIndex: selected,
+          questionIdx: questionIndex,
+          selectedIndex,
         }),
+        cache: "no-store",
       });
 
       const data = await res.json().catch(() => ({}));
@@ -246,15 +316,25 @@ export default function TeamPlayPage() {
       if (!res.ok) {
         throw new Error(data.error ?? "Could not submit answer.");
       }
-
-      setMyAnswers((prev) => ({
-        ...prev,
-        [game.current_question]: selected,
-      }));
-
-      setSubmitted(true);
     } catch (error) {
       console.error("Answer submission failed:", error);
+
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : "Could not submit answer."
+      );
+
+      // If the question is still live, unlock so the player can retry.
+      // If reveal has already started, never unlock the answer UI.
+      if (game.phase === "question") {
+        setSubmitted(false);
+        setMyAnswers((prev) => {
+          const next = { ...prev };
+          delete next[questionIndex];
+          return next;
+        });
+      }
     } finally {
       setSubmitting(false);
     }
@@ -339,7 +419,7 @@ export default function TeamPlayPage() {
     );
   }
 
-  if (loading || !game) {
+  if (!game) {
     return (
       <main className="min-h-screen flex items-center justify-center">
         <p className="font-display text-xl text-white/70 animate-pulse">
@@ -465,11 +545,10 @@ export default function TeamPlayPage() {
 
                 <div className="grid grid-cols-1 gap-3 w-full">
                   {question.options.map((opt, i) => {
-                    const showResult = game.phase === "reveal";
+                    // Never show correct/wrong feedback until the reveal
+                    // payload for THIS question is confirmed.
+                    const showResult = revealDataReady;
 
-                    // During reveal, use the answer that was actually
-                    // accepted by the server. During the question phase,
-                    // use the currently selected option.
                     const answerForDisplay = showResult
                       ? myAnswers[game.current_question] ?? selected
                       : selected;
@@ -580,7 +659,13 @@ export default function TeamPlayPage() {
                     );
                   })}
 
-                  {game.phase === "question" && (
+                  {submitError && game.phase === "question" && (
+                  <p className="mt-3 text-center text-gamepink text-xs font-semibold">
+                    {submitError}
+                  </p>
+                )}
+
+                {game.phase === "question" && (
                     <motion.button
                       type="button"
                       onClick={submitAnswer}
@@ -619,7 +704,7 @@ export default function TeamPlayPage() {
 
                 </div>
 
-                {game.phase === "reveal" && (
+                {revealDataReady && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
