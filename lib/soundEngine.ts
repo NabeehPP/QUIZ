@@ -313,11 +313,11 @@ class SoundEngine {
       now
     );
 
-    this.musicGain.gain.setTargetAtTime(
-      0.025,
-      now,
-      0.04
-    );
+   this.musicGain.gain.setTargetAtTime(
+   0.035,
+   now,
+   0.04
+   );
 
     this.musicPlaying = true;
 
@@ -404,11 +404,11 @@ class SoundEngine {
             currentTime
           );
 
-          this.musicGain.gain.setTargetAtTime(
-            0.012,
-            currentTime,
-            0.12
-          );
+     this.musicGain.gain.setTargetAtTime(
+     0.017,
+     currentTime,
+     0.12
+    );
         }
 
         this.musicResumeTimer = null;
