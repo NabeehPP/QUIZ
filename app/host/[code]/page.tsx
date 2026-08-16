@@ -11,6 +11,10 @@ import {
   Award,
   Sparkles,
   CheckCircle2,
+  Clock3,
+  Zap,
+  LockKeyhole,
+  Target,
 } from "lucide-react";
 
 import BackgroundShapes from "@/components/BackgroundShapes";
@@ -546,6 +550,93 @@ export default function HostProjectorPage() {
                     </div>
                   ))}
                 </div>
+
+                {/* QUIZ RULES */}
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 }}
+                  className="mt-6 glass rounded-2xl p-5 border border-white/10"
+                >
+                  <div className="flex items-center gap-2 mb-4">
+                    <Target
+                      size={19}
+                      className="text-gameyellow"
+                    />
+                    <h3 className="font-display font-black text-base md:text-lg text-white">
+                      QUIZ RULES
+                    </h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="flex items-start gap-3 rounded-xl bg-white/5 border border-white/5 p-3">
+                      <Clock3
+                        size={19}
+                        className="text-gamegreen shrink-0 mt-0.5"
+                      />
+                      <div>
+                        <p className="font-display font-bold text-sm text-white">
+                          30 SECOND TIMER
+                        </p>
+                        <p className="text-xs text-white/50 mt-0.5">
+                          Each question has 30 seconds.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 rounded-xl bg-white/5 border border-white/5 p-3">
+                      <Zap
+                        size={19}
+                        className="text-gameyellow shrink-0 mt-0.5"
+                      />
+                      <div>
+                        <p className="font-display font-bold text-sm text-white">
+                          SPEED BONUS
+                        </p>
+                        <p className="text-xs text-white/50 mt-0.5">
+                          Faster correct answers earn a higher bonus.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 rounded-xl bg-white/5 border border-white/5 p-3">
+                      <Trophy
+                        size={19}
+                        className="text-gamepink shrink-0 mt-0.5"
+                      />
+                      <div>
+                        <p className="font-display font-bold text-sm text-white">
+                          100 + UP TO 50 POINTS
+                        </p>
+                        <p className="text-xs text-white/50 mt-0.5">
+                          Correct answer = 100 base + up to 50 speed bonus.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 rounded-xl bg-white/5 border border-white/5 p-3">
+                      <LockKeyhole
+                        size={19}
+                        className="text-gamegreen shrink-0 mt-0.5"
+                      />
+                      <div>
+                        <p className="font-display font-bold text-sm text-white">
+                          SUBMIT TO LOCK
+                        </p>
+                        <p className="text-xs text-white/50 mt-0.5">
+                          Once submitted, the answer cannot be changed.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] md:text-xs font-display font-bold uppercase tracking-wide text-white/45">
+                    <span>Correct: 100–150 pts</span>
+                    <span>Wrong: 0 pts</span>
+                    <span>First submission counts</span>
+                    <span>Bonus uses actual response time</span>
+                  </div>
+                </motion.div>
               </div>
             </motion.section>
           )}
