@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
-const REQUIRED_TEAMS = 7;
+const REQUIRED_TEAMS = 8;
 
 export async function POST(
   req: Request,
