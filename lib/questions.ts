@@ -85,17 +85,17 @@ export const QUESTIONS: FullQuestion[] = [
   // ============================================================
 
   {
-    question:
-      "National Anti-Ragging Week is observed from:",
-    options: [
-      "August 1 to August 7",
-      "August 5 to August 11",
-      "August 12 to August 18",
-      "August 15 to August 21",
-    ],
-    correctIndex: 2,
-    explanation:
-      "National Anti-Ragging Week follows Anti-Ragging Day and is observed from August 12 to August 18.",
+   question:
+  "Which of the following is the official National Anti-Ragging website?",
+options: [
+  "www.ugcantiragging.gov.in",
+  "www.nationalantiragging.gov.in",
+  "www.antiraggingindia.gov.in",
+  "www.antiragging.in",
+],
+correctIndex: 3,
+explanation:
+  "The official National Anti-Ragging portal is antiragging.in, which provides information, complaint facilities, helpline details, and anti-ragging resources.",
   },
 
   {
@@ -170,16 +170,16 @@ export const QUESTIONS: FullQuestion[] = [
 
   {
     question:
-      "A fresher initially agrees to participate in a college activity but later says they are uncomfortable and asks to stop. Seniors continue pressuring the student. What is the most important concern?",
-    options: [
-      "The student initially agreed",
-      "The activity was organised by seniors",
-      "The student objected but was pressured to continue",
-      "No physical injury occurred",
-    ],
-    correctIndex: 2,
-    explanation:
-      "The student's later objection and the continued pressure are important. Consent at the beginning does not justify continuing coercive or humiliating conduct after the student objects.",
+  "Who is the UGC National Anti Ragging Monitoring Agency?",
+options: [
+  "Centre for Youth (C4Y)",
+  "National Council for Youth Affairs (NCYA)",
+  "National Youth Development Council (NYDC)",
+  "Centre for Educational Monitoring (CEM)",
+],
+correctIndex: 0,
+explanation:
+  "The Centre for Youth (C4Y) is the UGC National Anti Ragging Monitoring Agency responsible for monitoring the National Anti Ragging Helpline and related anti-ragging activities.",
   },
 
   // ============================================================
@@ -206,10 +206,10 @@ export const QUESTIONS: FullQuestion[] = [
     options: [
       "The activity was organised outside class hours",
       "The students were senior to the fresher",
-      "The fresher was subjected to intimidation and pressure",
       "The activity lasted less than five minutes",
+      "The fresher was subjected to intimidation and pressure",
     ],
-    correctIndex: 2,
+    correctIndex: 3,
     explanation:
       "Intimidation and pressure are central concerns. Ragging is not limited to physical violence and can include conduct that creates fear, apprehension, humiliation, or psychological harm.",
   },
