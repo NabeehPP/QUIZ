@@ -527,10 +527,10 @@ export default function HostProjectorPage() {
                         stiffness: 200,
                         damping: 14,
                       }}
-                      className="rounded-2xl p-4 shadow-pop font-display font-extrabold text-ink text-center break-words"
-                      style={{
-                        backgroundColor: t.color,
-                      }}
+className="rounded-2xl p-4 shadow-pop font-display font-extrabold text-slate-100 text-center break-words"
+style={{
+  backgroundColor: t.color,
+}}
                     >
                       {t.name}
                     </motion.div>
