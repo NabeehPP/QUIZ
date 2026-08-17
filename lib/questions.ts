@@ -7,7 +7,7 @@ export interface FullQuestion {
   explanation: string;
 }
 
-export const TIME_LIMIT_SECONDS = 30;
+export const TIME_LIMIT_SECONDS = 25;
 
 // 15-question competitive group quiz
 //

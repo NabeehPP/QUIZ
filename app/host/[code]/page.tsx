@@ -576,10 +576,10 @@ export default function HostProjectorPage() {
                       />
                       <div>
                         <p className="font-display font-bold text-sm text-white">
-                          30 SECOND TIMER
+                          25 SECOND TIMER
                         </p>
                         <p className="text-xs text-white/50 mt-0.5">
-                          Each question has 30 seconds.
+                          Each question has 25 seconds.
                         </p>
                       </div>
                     </div>
